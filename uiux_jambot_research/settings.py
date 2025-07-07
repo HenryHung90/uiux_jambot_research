@@ -161,11 +161,11 @@ PROCESS_ON_PRODUCTION = os.getenv('PROCESS_ON_PRODUCTION', False).lower() == 'tr
 if PROCESS_ON_PRODUCTION:
     # 生產環境 - 使用子路徑
     MIDDLEWARE_EXEMPT_PATHS = [
-        '/taskmind/api/login/',
-        '/taskmind/api/register/',
-        '/taskmind/',
-        '/taskmind/files/img/logo.PNG',
-        '/taskmind/vite.svg',
+        '/api/login/',
+        '/api/register/',
+        '/',
+        '/files/img/logo.PNG',
+        '/vite.svg',
         '/',
         '/files/img/logo.PNG',
         '/vite.svg'
