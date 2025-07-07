@@ -1,0 +1,15 @@
+.env
+
+frontend/.env
+frontend/.env.development
+frontend/.env.production
+frontend/node_modules
+
+static
+
+backend/__pycache__
+backend/management/commands/__pycache__
+backend/migrations/__pycache__
+backend/models/__pycache__
+backend/views/__pycache__
+uiux_jambot_research/__pycache__
