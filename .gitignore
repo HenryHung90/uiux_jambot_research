@@ -7,6 +7,8 @@ frontend/node_modules
 
 static
 
+test_request.http
+
 backend/__pycache__
 backend/management/commands/__pycache__
 backend/migrations/__pycache__
