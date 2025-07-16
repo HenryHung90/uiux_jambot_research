@@ -1,15 +1,17 @@
-from .student_classes import StudentClass
-from .students import Student
-from .courses import Course
 from .course_tasks import CourseTask
-from .student_courses import StudentCourse
+from .courses import Course
+from .login_attempts import LoginAttempt
+from .student_classes import StudentClass
 from .student_course_tasks import StudentCourseTask
+from .student_courses import StudentCourse
+from .students import Student
 
 __all__ = [
-    'StudentClass',
-    'Student',
-    'Course',
     'CourseTask',
+    'Course',
+    'LoginAttempt',
+    'StudentClass',
+    'StudentCourseTask',
     'StudentCourse',
-    'StudentCourseTask'
+    'Student',
 ]
