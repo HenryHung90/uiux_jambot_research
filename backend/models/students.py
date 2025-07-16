@@ -59,6 +59,7 @@ class Student(AbstractBaseUser):
 
     class Meta:
         db_table = 'students'
+        ordering = ['-student_class_id', 'student_id']
         verbose_name = '學生'
         verbose_name_plural = '學生'
 
