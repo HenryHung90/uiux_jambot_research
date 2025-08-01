@@ -1,35 +1,110 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// style
+// API
+// components
+// interface
 
-function App() {
-  const [count, setCount] = useState(0)
+import {useRoutes} from "react-router-dom";
+import React, {useState, useEffect} from "react";
+
+import {Provider} from 'react-redux';
+import store from './store/index';
+import {useAlertLoading} from "./store/hooks/useAlertLoading";
+import {useUserInfo} from "./store/hooks/useUserInfo";
+
+
+// style
+// API
+import {AuthServices} from "./utils/services/core";
+// components
+import AlertLog from "./components/alertLogAndLoadingPage/AlertLog";
+import Loading from "./components/alertLogAndLoadingPage/Loading";
+import Login from "./pages/Login/Login";
+import Home from "./pages/Home/Home";
+import AdminHome from "./pages/AdminHome/AdminHome";
+import NotFound from "./pages/errorPage/404/NotFound";
+// interface
+
+const AppContent = () => {
+  const [routes, setRoutes] = useState<Array<{ path: string; element: JSX.Element }>>([]);
+  const {
+    alertOpen,
+    alertTitle,
+    alertMessage,
+    loadingOpen,
+    handleAlertClose
+  } = useAlertLoading();
+
+  const {setUserInfo, isTeacher} = useUserInfo()
+
+  // 檢查登入
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const {student_id, name, is_teacher} = await AuthServices.getUserInfo()
+      if (student_id) {
+        setUserInfo({studentId: student_id, name: name, isTeacher: is_teacher})
+      }
+    }
+
+    fetchUserInfo()
+  }, []);
+
+  useEffect(() => {
+    if (isTeacher === null) {
+      setRoutes(unauth_routes)
+    } else if (isTeacher) {
+      setRoutes([...auth_routes, ...teacher_routes])
+    } else {
+      setRoutes(auth_routes)
+    }
+  }, [isTeacher]);
+
+
+  const unauth_routes = [
+    {
+      path: '*',
+      element: <Login/>
+    },
+  ]
+
+  const auth_routes = [
+    {
+      path: '/home',
+      element: <Home/>
+    },
+    {
+      path: '/',
+      element: <Home/>
+    },
+    {
+      path: '*',
+      element: <NotFound/>
+    }
+  ]
+  const teacher_routes = [
+    {
+      path: '/admin',
+      element: <AdminHome/>
+    },
+  ]
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div>
+      {useRoutes(routes)}
+      <Loading loadingOpen={loadingOpen}/>
+      <AlertLog
+        AlertOpen={alertOpen}
+        AlertTitle={alertTitle}
+        AlertMsg={alertMessage}
+        AlertLogClose={handleAlertClose}
+      />
+    </div>
+  );
+};
 
-export default App
+export default function App() {
+  return (
+    <Provider store={store}>
+      <AppContent/>
+    </Provider>
+  );
+}
