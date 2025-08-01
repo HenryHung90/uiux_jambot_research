@@ -10,6 +10,36 @@ from django.utils import timezone
 from backend.models import Student, LoginAttempt
 
 
+# anti
+def anti_force_login_attempt(ip_address, acc):
+    # 檢查過去一小時內的失敗嘗試次數
+    one_hour_ago = timezone.now() - timedelta(hours=1)
+    failed_attempts = LoginAttempt.objects.filter(
+        ip_address=ip_address,
+        success=False,
+        timestamp__gte=one_hour_ago
+    ).count()
+
+    # 如果失敗次數達到或超過 5 次，則封鎖該 IP
+    if failed_attempts >= 5:
+        # 設置封鎖時間為 10 分鐘
+        block_time = 10
+        block_until = timezone.now() + timedelta(minutes=block_time)
+
+        # 記錄封鎖
+        LoginAttempt.objects.create(
+            ip_address=ip_address,
+            student_id=acc,
+            success=False,
+            blocked_until=block_until
+        )
+
+        return Response({
+            'message': f'由於多次登入失敗，您的 IP 已被暫時封鎖。請 {block_time} 分鐘後再試。',
+            'status': 403
+        }, status=status.HTTP_403_FORBIDDEN)
+
+
 # CSRF Token
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -44,32 +74,7 @@ def login_system(request):
             )
             return Response({'message': '帳號或密碼不得為空', 'status': 400}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 檢查過去一小時內的失敗嘗試次數
-        one_hour_ago = timezone.now() - timedelta(hours=1)
-        failed_attempts = LoginAttempt.objects.filter(
-            ip_address=ip_address,
-            success=False,
-            timestamp__gte=one_hour_ago
-        ).count()
-
-        # 如果失敗次數達到或超過 5 次，則封鎖該 IP
-        if failed_attempts >= 5:
-            # 設置封鎖時間為 10 分鐘
-            block_time = 10
-            block_until = timezone.now() + timedelta(minutes=block_time)
-
-            # 記錄封鎖
-            LoginAttempt.objects.create(
-                ip_address=ip_address,
-                student_id=acc,
-                success=False,
-                blocked_until=block_until
-            )
-
-            return Response({
-                'message': f'由於多次登入失敗，您的 IP 已被暫時封鎖。請 {block_time} 分鐘後再試。',
-                'status': 403
-            }, status=status.HTTP_403_FORBIDDEN)
+        anti_force_login_attempt(ip_address, acc)
 
         # 登入
         user = authenticate(student_id=acc, password=psw, request=request._request)
@@ -83,7 +88,7 @@ def login_system(request):
             )
             return Response({'message': '無此用戶或帳號密碼錯誤', 'status': 403}, status=status.HTTP_403_FORBIDDEN)
 
-        # 登入成功，記錄成功的登入嘗試
+        # 登入成功，記錄成功，登入嘗試
         LoginAttempt.objects.create(
             ip_address=ip_address,
             student_id=acc,
@@ -94,12 +99,14 @@ def login_system(request):
         login(request._request, user)
 
         return Response(
-            {'message': 'success', 'name': student_info.name, 'student_id': student_info.student_id},
+            {'message': 'success', 'name': student_info.name, 'student_id': student_info.student_id,
+             'is_teacher': student_info.is_superuser},
             status=status.HTTP_200_OK)
 
     except Exception as e:
         print(f'Login Error: {e}')
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 # 登出系統
 @ensure_csrf_cookie
@@ -115,3 +122,22 @@ def logout_system(request):
     except Exception as e:
         print(f'Logout Error: {e}')
         return Response({'Logout Error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# User Info
+@ensure_csrf_cookie
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def userinfo_view(request):
+    try:
+        if request.user.is_authenticated:
+            student_info = Student.objects.get(student_id=request.user.student_id)
+            return Response(
+                {'message': 'success', 'name': student_info.name, 'student_id': student_info.student_id,
+                 'is_teacher': student_info.is_superuser},
+                status=status.HTTP_200_OK)
+        else:
+            return Response({'isAuthenticated': request.user.is_authenticated}, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f'Userinfo Error: {e}')
+        return Response({'userinfo Error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
