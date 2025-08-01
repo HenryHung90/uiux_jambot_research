@@ -174,6 +174,10 @@ if PROCESS_ON_PRODUCTION:
     ]
     MIDDLEWARE_ADMIN_PREFIX = '/taskmind/api/admin/'
 else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:5173",  # Vite 開發伺服器的預設位址
+    ]
+    CORS_ALLOW_CREDENTIALS = True
     # 開發環境 - 直接路徑
     MIDDLEWARE_EXEMPT_PATHS = [
         '/api/login/',
