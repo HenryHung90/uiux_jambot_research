@@ -12,26 +12,6 @@ class StudentCourseTaskViewSet(viewsets.ModelViewSet):
     serializer_class = StudentCourseTaskSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        queryset = StudentCourseTask.objects.all()
-
-        # 依學生過濾
-        student_id = self.request.query_params.get('student', None)
-        if student_id:
-            queryset = queryset.filter(student_id=student_id)
-
-        # 依課程過濾
-        course_id = self.request.query_params.get('course', None)
-        if course_id:
-            queryset = queryset.filter(course_id=course_id)
-
-        # 依作業過濾
-        course_task_id = self.request.query_params.get('course_task', None)
-        if course_task_id:
-            queryset = queryset.filter(course_task_id=course_task_id)
-
-        return queryset
-
     def create(self, request, *args, **kwargs):
         try:
             return super().create(request, *args, **kwargs)

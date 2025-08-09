@@ -2,10 +2,15 @@ import {
   API_createCourse,
   API_deleteCourse,
   API_getAllCourses,
-  API_getCourseById, API_getCoursesByActiveStatus, API_getCoursesByClass, API_getCoursesByName, API_toggleCourseActive,
-  API_updateCourse, API_updateCourseContent
+  API_getCourseById,
+  API_getCoursesByActiveStatus,
+  API_getCoursesByClass,
+  API_getCoursesByName,
+  API_getCourseTasks,
+  API_toggleCourseActive,
+  API_updateCourseContent
 } from "../API/API_course";
-import {ICourseStudent, ICourseTeacher, Req_createCourse, Req_updateCourse} from "../API/interface";
+import {ICourseTask, ICourseTeacher, Req_createAndUpdateCourse} from "../API/interface";
 
 export class CourseService {
   // TODO: 區分 Teacher & Student get Courses
@@ -21,14 +26,8 @@ export class CourseService {
     return resData
   }
 
-  static async createCourse(reqData: Req_createCourse) {
+  static async createCourse(reqData: Req_createAndUpdateCourse) {
     const response = await API_createCourse(reqData)
-    const resData: ICourseTeacher = response.data
-    return resData
-  }
-
-  static async updateCourse(courseId: string | number, reqData: Req_updateCourse) {
-    const response = await API_updateCourse(courseId, reqData)
     const resData: ICourseTeacher = response.data
     return resData
   }
@@ -63,9 +62,15 @@ export class CourseService {
     return resData
   }
 
-  static async updateCourseContent(courseId: string | number, reqData: Req_updateCourse) {
+  static async updateCourseContent(courseId: string | number, reqData: Req_createAndUpdateCourse) {
     const response = await API_updateCourseContent(courseId, reqData)
     const resData: ICourseTeacher = response.data
+    return resData
+  }
+
+  static async getCourseTasks(courseId: string | number) {
+    const response = await API_getCourseTasks(courseId)
+    const resData: Array<ICourseTask> = response.data
     return resData
   }
 }
