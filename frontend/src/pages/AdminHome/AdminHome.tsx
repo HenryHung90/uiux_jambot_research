@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import {
   Card,
@@ -7,7 +7,7 @@ import {
   Button,
   Chip, Collapse,
 } from "@material-tailwind/react";
-import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
+import {ChevronDownIcon, ChevronUpIcon, PlusIcon} from "@heroicons/react/24/outline";
 
 import SemesterUnitsComponent from './components/SemesterUnits';
 import StudentListComponent from './components/StudentList';
@@ -24,6 +24,10 @@ const AdminHome = () => {
   const [currentContent, setCurrentContent] = useState<'unit' | 'students' | 'review'>("unit");
 
   const {name} = useUserInfo();
+
+  useEffect(() => {
+
+  }, [])
 
   const semesters = [
     {
@@ -160,6 +164,15 @@ const AdminHome = () => {
                       {semester.name}
                     </Button>
                   ))}
+                  <Button
+                    color='orange'
+                    variant='text'
+                    size="sm"
+                    className='flex items-center justify-center w-full'
+                    placeholder={undefined}
+                  >
+                    <PlusIcon className="h-4 w-4"/>新增學期
+                  </Button>
                 </div>
               </Collapse>
 

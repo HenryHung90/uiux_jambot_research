@@ -6,8 +6,7 @@ frontend/.env.production
 frontend/node_modules
 
 static
-
-test_request.http
+/request
 
 backend/__pycache__
 backend/management/commands/__pycache__

@@ -56,6 +56,15 @@ CORS_ALLOW_METHODS = [
 
 # Application definition
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -66,6 +75,7 @@ INSTALLED_APPS = [
     # libraries
     'corsheaders',
     'rest_framework',
+    'django_filters',
     # API
     'backend',
     'django_extensions',
@@ -80,6 +90,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # 自定義 Middleware
+    "backend.middleware.IPBlockerMiddleware",
+    "backend.middleware.AuthenticationMiddleware",
 ]
 
 ROOT_URLCONF = "uiux_jambot_research.urls"
@@ -163,8 +176,7 @@ PROCESS_ON_PRODUCTION = os.getenv('PROCESS_ON_PRODUCTION', False).lower() == 'tr
 if PROCESS_ON_PRODUCTION:
     # 生產環境 - 使用子路徑
     MIDDLEWARE_EXEMPT_PATHS = [
-        '/api/login/',
-        '/api/register/',
+        '/api/login',
         '/',
         '/files/img/logo.PNG',
         '/vite.svg',
@@ -180,8 +192,7 @@ else:
     CORS_ALLOW_CREDENTIALS = True
     # 開發環境 - 直接路徑
     MIDDLEWARE_EXEMPT_PATHS = [
-        '/api/login/',
-        '/api/register/',
+        '/api/login',
         '/',
         '/files/img/logo.PNG',
         '/vite.svg'
