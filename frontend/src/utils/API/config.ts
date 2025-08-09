@@ -69,7 +69,7 @@ class APIController {
   }
 }
 
-class API_POST extends APIController {
+export class API_POST extends APIController {
   constructor(baseURL: string, data: RequestParams | FormData) {
     super(baseURL, "POST", data)
   }
@@ -96,7 +96,7 @@ class API_POST extends APIController {
   }
 }
 
-class API_GET extends APIController {
+export class API_GET extends APIController {
   constructor(baseURL: string, params?: RequestParams | FormData) {
     super(baseURL, "GET", params)
   }
@@ -129,5 +129,15 @@ class API_GET extends APIController {
   }
 }
 
+export class API_PUT extends APIController {
+  constructor(baseURL: string, params?: RequestParams | FormData) {
+    super(baseURL, "PUT", params)
+  }
+}
 
-export {API_GET, API_POST}
+
+export class API_DELETE extends APIController {
+  constructor(baseURL: string, params?: RequestParams | FormData) {
+    super(baseURL, "DELETE", params)
+  }
+}

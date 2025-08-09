@@ -47,6 +47,9 @@ class AuthenticationMiddleware:
         self.exempt_path = getattr(settings, 'MIDDLEWARE_EXEMPT_PATHS', [])
         self.admin_prefix = getattr(settings, 'MIDDLEWARE_ADMIN_PREFIX', '')
 
+        self.superuser_paths = getattr(settings, 'MIDDLEWARE_SUPERUSER_PATHS', [])
+        self.superuser_methods = ['POST', 'PUT', 'PATCH', 'DELETE']
+
     def __call__(self, request):
         # 如果是靜態文件請求，直接放行
         if request.path.startswith(settings.STATIC_URL):
@@ -58,11 +61,19 @@ class AuthenticationMiddleware:
                 status=status.HTTP_200_OK
             )
 
-        if request.path.startswith(self.admin_prefix) and request.user.user_type != 'TEACHER':
+        if request.path.startswith(self.admin_prefix) and not request.user.is_superuser:
             return JsonResponse(
                 {'message': 'permission denied', 'status': 400},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        for path in self.superuser_paths:
+            if request.path.startswith(path):
+                if request.method in self.superuser_methods and not request.user.is_superuser:
+                    return JsonResponse({
+                        'message': '此操作需要超級用戶權限',
+                        'status': 403
+                    }, status=status.HTTP_403_FORBIDDEN)
 
         response = self.get_response(request)
         return response
