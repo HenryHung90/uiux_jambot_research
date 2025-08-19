@@ -23,7 +23,7 @@ export const API_getCourseTaskById = (taskId: string | number) => {
  * @param taskData 課程任務數據
  * @returns Promise 返回創建結果
  */
-export const API_createCourseTask = (taskData: Req_createAndUpdateCourseTask) => {
+export const API_createCourseTask = (taskData: FormData) => {
   return new API_POST(import.meta.env.VITE_APP_API_COURSE_TASKS, taskData).sendRequest()
 }
 
@@ -33,7 +33,7 @@ export const API_createCourseTask = (taskData: Req_createAndUpdateCourseTask) =>
  * @param taskData 課程任務更新數據
  * @returns Promise 返回更新結果
  */
-export const API_updateCourseTask = (taskId: string | number, taskData: Req_createAndUpdateCourseTask) => {
+export const API_updateCourseTask = (taskId: string | number, taskData: FormData) => {
   return new API_PUT(`${import.meta.env.VITE_APP_API_COURSE_TASKS}${taskId}/`, taskData).sendRequest()
 }
 

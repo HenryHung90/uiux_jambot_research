@@ -27,6 +27,15 @@ export const API_createCourse = (courseData: Req_createAndUpdateCourse) => {
   return new API_POST(import.meta.env.VITE_APP_API_COURSES, courseData).sendRequest()
 }
 
+/**
+ * 更新課程信息
+ * @param courseId 課程ID
+ * @param courseData 課程更新數據
+ * @returns Promise 返回更新結果
+ */
+export const API_updateCourse = (courseId: string | number, courseData: Req_createAndUpdateCourse) => {
+  return new API_PUT(`${import.meta.env.VITE_APP_API_COURSES}${courseId}/`, courseData).sendRequest()
+}
 
 /**
  * 刪除課程
@@ -72,30 +81,6 @@ export const API_getCoursesByActiveStatus = (isActive: boolean) => {
 export const API_getCoursesByName = (name: string) => {
   return new API_GET(`${import.meta.env.VITE_APP_API_COURSES}?name=${name}`).sendRequest()
 }
-
-/**
- * 上傳課程內容檔案或設定內容連結
- * @param courseId 課程ID
- * @param data 可以包含檔案或URL的物件
- * @param data.file 課程內容檔案 (可選)
- * @param data.contentUrl 課程內容連結 (可選)
- * @returns Promise 返回上傳結果
- */
-export const API_updateCourseContent = (
-  courseId: string | number,
-  data: Req_createAndUpdateCourse
-) => {
-  const formData = new FormData();
-  if (data.file) {
-    formData.append('contents', data.file);
-  }
-  if (data.content_url) {
-    formData.append('content_url', data.content_url);
-  }
-
-  return new API_PUT(`${import.meta.env.VITE_APP_API_COURSES}${courseId}/update_content/`, formData).sendRequest();
-};
-
 
 /**
  * 獲取特定課程的所有課程任務
