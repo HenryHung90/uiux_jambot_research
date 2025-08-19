@@ -76,6 +76,21 @@ def login_system(request):
 
         anti_force_login_attempt(ip_address, acc)
 
+        # 檢查用戶是否存在且是否啟用
+        try:
+            student = Student.objects.get(student_id=acc)
+            if not student.is_active:
+                # 記錄失敗的登入嘗試
+                LoginAttempt.objects.create(
+                    ip_address=ip_address,
+                    student_id=acc,
+                    success=False
+                )
+                return Response({'message': '此帳號已被停用', 'status': 403}, status=status.HTTP_403_FORBIDDEN)
+        except Student.DoesNotExist:
+            # 用戶不存在，但不提早返回，讓 authenticate 處理
+            pass
+
         # 登入
         user = authenticate(student_id=acc, password=psw, request=request._request)
 
@@ -87,6 +102,15 @@ def login_system(request):
                 success=False
             )
             return Response({'message': '無此用戶或帳號密碼錯誤', 'status': 403}, status=status.HTTP_403_FORBIDDEN)
+
+        if not user.is_active:
+            # 記錄失敗的登入嘗試
+            LoginAttempt.objects.create(
+                ip_address=ip_address,
+                student_id=acc,
+                success=False
+            )
+            return Response({'message': '此帳號已被停用', 'status': 403}, status=status.HTTP_403_FORBIDDEN)
 
         # 登入成功，記錄成功，登入嘗試
         LoginAttempt.objects.create(

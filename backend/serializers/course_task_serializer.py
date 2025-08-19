@@ -18,6 +18,8 @@ class CourseTaskSerializer(serializers.ModelSerializer):
             'course',
             'course_detail',
             'contents',
+            'content_url',
+            'content_file',
             'all_assistive_tool_analysis',
             'all_prompt_analysis',
             'created_at',

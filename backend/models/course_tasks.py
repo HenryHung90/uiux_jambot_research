@@ -20,7 +20,19 @@ class CourseTask(models.Model):
     contents = models.JSONField(
         default=dict,
         blank=True,
+        null=True,
         verbose_name="作業內容"
+    )
+    content_file = models.FileField(
+        upload_to='course_task_files/',
+        blank=True,
+        null=True,
+        verbose_name="課程內容檔案"
+    )
+    content_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="課程內容連結"
     )
     all_assistive_tool_analysis = models.JSONField(
         default=dict,

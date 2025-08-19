@@ -1,8 +1,10 @@
 import {
   API_bulkImportStudents,
   API_changeStudentPassword,
+  API_adminChangeStudentPassword,
   API_createStudent,
   API_deleteStudent,
+  API_downloadStudentTemplate,
   API_getAllStudents,
   API_getStudentById,
   API_getStudentsByActiveStatus,
@@ -11,8 +13,21 @@ import {
   API_toggleStudentActive,
   API_updateStudent
 } from "../API/API_student";
-import {IStudent, Req_changePassword, Req_createStudent, Req_updateStudent, RequestParams} from "../API/interface";
+import {IStudent, Req_adminChangePassword, Req_changePassword, Req_createStudent, Req_updateStudent, RequestParams} from "../API/interface";
 
+// 定義批量導入學生的返回結果接口
+interface BulkImportResult {
+  message: string;
+  details?: {
+    success: number;
+    failed: number;
+    errors?: Array<{
+      row: number;
+      student_id: string;
+      error: string;
+    }>;
+  };
+}
 
 export class StudentService {
   static async getAllStudents() {
@@ -24,6 +39,7 @@ export class StudentService {
   static async getStudentById(studentId: string | number) {
     const response = await API_getStudentById(studentId)
     const resData: IStudent = response.data
+    return resData
   }
 
   static async createStudent(reqData: Req_createStudent) {
@@ -46,14 +62,23 @@ export class StudentService {
 
   static async changeStudentPassword(studentId: string | number, reqData: Req_changePassword) {
     const response = await API_changeStudentPassword(studentId, reqData)
-    const resData: IStudent = response.data
+    const resData = response.data
     return resData
   }
 
-  static async uploadStudents(file: File){
-    const response = await API_bulkImportStudents(file)
-    const resData: RequestParams = response.data
+  static async adminChangeStudentPassword(studentId: string | number, reqData: Req_adminChangePassword) {
+    const response = await API_adminChangeStudentPassword(studentId, reqData)
+    const resData = response.data
     return resData
+  }
+
+  static async uploadStudents(file: File): Promise<BulkImportResult> {
+    const response = await API_bulkImportStudents(file)
+    return response.data
+  }
+
+  static downloadStudentTemplate() {
+    API_downloadStudentTemplate()
   }
 
   static async getStudentsByClass(classId: string | number) {

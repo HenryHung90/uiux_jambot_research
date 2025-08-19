@@ -7,6 +7,10 @@ frontend/node_modules
 
 static
 /request
+/files/course_contents
+/files/course_task_files
+
+db.sqlite3
 
 backend/__pycache__
 backend/management/commands/__pycache__

@@ -1,5 +1,5 @@
 import {API_POST, API_GET, API_PUT, API_DELETE} from './config'
-import {Req_changePassword, Req_createStudent, Req_updateStudent} from "./interface";
+import {Req_changePassword, Req_createStudent, Req_updateStudent, Req_adminChangePassword} from "./interface";
 
 
 /**
@@ -48,13 +48,23 @@ export const API_deleteStudent = (studentId: string | number) => {
 }
 
 /**
- * 修改學生密碼
+ * 修改學生密碼 (需要舊密碼驗證)
  * @param studentId 學生ID
- * @param passwordData 密碼數據
+ * @param passwordData 密碼數據 (包含舊密碼和新密碼)
  * @returns Promise 返回密碼修改結果
  */
 export const API_changeStudentPassword = (studentId: string | number, passwordData: Req_changePassword) => {
   return new API_POST(`${import.meta.env.VITE_APP_API_STUDENTS}${studentId}/change_password/`, passwordData).sendRequest()
+}
+
+/**
+ * 管理員直接修改學生密碼 (不需要舊密碼驗證)
+ * @param studentId 學生ID
+ * @param passwordData 密碼數據 (只需要新密碼)
+ * @returns Promise 返回密碼修改結果
+ */
+export const API_adminChangeStudentPassword = (studentId: string | number, passwordData: Req_adminChangePassword) => {
+  return new API_POST(`${import.meta.env.VITE_APP_API_STUDENTS}${studentId}/change_password_admin/`, passwordData).sendRequest()
 }
 
 /**
@@ -67,6 +77,14 @@ export const API_bulkImportStudents = (file: File) => {
   formData.append('file', file);
 
   return new API_POST(`${import.meta.env.VITE_APP_API_STUDENTS}bulk_import/`, formData).sendRequest()
+}
+
+/**
+ * 下載學生批量導入範本
+ * @returns 下載Excel範本文件
+ */
+export const API_downloadStudentTemplate = () => {
+  window.open(`${import.meta.env.VITE_APP_API_STUDENTS}download_template/`, '_blank');
 }
 
 /**
@@ -102,5 +120,5 @@ export const API_getStudentsByActiveStatus = (isActive: boolean) => {
  * @returns Promise 學生資料
  */
 export const API_toggleStudentActive = (studentId: string | number) => {
-  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENTS}/${studentId}/toggle_active`).sendRequest()
+  return new API_POST(`${import.meta.env.VITE_APP_API_STUDENTS}${studentId}/toggle_active/`, {}).sendRequest()
 }

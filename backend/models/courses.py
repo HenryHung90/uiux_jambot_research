@@ -10,17 +10,6 @@ class Course(models.Model):
         related_name='courses',
         verbose_name="班級"
     )
-    contents = models.FileField(
-        upload_to='course_contents/',
-        blank=True,
-        null=True,
-        verbose_name="課程內容檔案"
-    )
-    content_url = models.URLField(
-        blank=True,
-        null=True,
-        verbose_name="課程內容連結"
-    )
     all_assistive_tool_analysis = models.JSONField(
         default=dict,
         blank=True,

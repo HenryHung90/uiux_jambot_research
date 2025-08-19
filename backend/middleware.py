@@ -72,7 +72,7 @@ class AuthenticationMiddleware:
                 if request.method in self.superuser_methods and not request.user.is_superuser:
                     return JsonResponse({
                         'message': '此操作需要超級用戶權限',
-                        'status': 403
+                        'status': 4041111
                     }, status=status.HTTP_403_FORBIDDEN)
 
         response = self.get_response(request)

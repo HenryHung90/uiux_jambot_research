@@ -25,7 +25,9 @@ class APIController {
       method: this.method,
       url: this.baseURL,
       withCredentials: this.TEST_MODE,
-      ...(this.method.toUpperCase() === 'POST' ? {data: this.data} : {params: this.data}),
+      ...(this.method.toUpperCase() === 'POST' || this.method.toUpperCase() === 'PUT'
+        ? {data: this.data}
+        : {params: this.data}),
       headers: {
         "X-CSRFToken": this.cookies.get("csrftoken")
       }

@@ -28,15 +28,6 @@ export const API_getStudentClassesByName = (name: string) => {
 }
 
 /**
- * 獲取特定班級的所有課程
- * @param classId 班級ID
- * @returns Promise 返回班級的所有課程
- */
-export const API_getStudentClassCourses = (classId: string) => {
-  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_CLASSES}${classId}/courses/`).sendRequest()
-}
-
-/**
  * 創建新班級
  * @param name 班級名稱
  * @returns Promise 返回創建結果
