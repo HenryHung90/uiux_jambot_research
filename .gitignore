@@ -10,6 +10,8 @@ static
 /files/course_contents
 /files/course_task_files
 
+db.sqlite3
+
 backend/__pycache__
 backend/management/commands/__pycache__
 backend/migrations/__pycache__
