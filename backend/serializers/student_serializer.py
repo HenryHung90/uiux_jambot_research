@@ -17,8 +17,10 @@ class StudentCreateSerializer(serializers.ModelSerializer):
         fields = ['student_id', 'name', 'student_class', 'password']
 
     def create(self, validated_data):
-        password = validated_data.pop('password')
-        student = Student(**validated_data)
-        student.set_password(password)
-        student.save()
+        student = Student.objects.create_user(
+            student_id=validated_data['student_id'],
+            name=validated_data['name'],
+            password=validated_data['password'],
+            student_class=validated_data['student_class']
+        )
         return student

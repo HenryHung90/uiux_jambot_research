@@ -1,19 +1,20 @@
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.http import HttpResponse
 from ..models.students import Student
 from ..models.student_classes import StudentClass
-from ..serializers.student_serializer import StudentSerializer
+from ..serializers.student_serializer import StudentSerializer, StudentCreateSerializer
 
 import pandas as pd
 import io
 
-
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as django_filters
+
 
 class StudentFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(field_name="name", lookup_expr="icontains")
@@ -24,6 +25,7 @@ class StudentFilter(django_filters.FilterSet):
         model = Student
         fields = ['name', 'student_class', 'is_active']
 
+
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
@@ -33,9 +35,14 @@ class StudentViewSet(viewsets.ModelViewSet):
     filterset_class = StudentFilter
     search_fields = ['name', 'student_id']
 
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return StudentCreateSerializer
+        return StudentSerializer
+
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def change_password(self, request, student_id=None):
-        """變更學生密碼"""
+        """變更學生密碼 (需要舊密碼驗證)"""
         student = get_object_or_404(Student, student_id=student_id)
 
         if request.user.is_superuser or request.user.student_id == student_id:
@@ -63,15 +70,60 @@ class StudentViewSet(viewsets.ModelViewSet):
             status=status.HTTP_403_FORBIDDEN
         )
 
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+    def change_password_admin(self, request, student_id=None):
+        """管理員直接變更學生密碼 (不需要舊密碼驗證)"""
+        student = get_object_or_404(Student, student_id=student_id)
+        new_password = request.data.get('new_password')
+
+        if not new_password:
+            return Response(
+                {'message': '需要提供新密碼'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        student.set_password(new_password)
+        student.save()
+        return Response({'message': '密碼更改成功'})
+
     @action(detail=True, methods=['post'])
-    def toggle_active(self, request, pk=None):
+    def toggle_active(self, request, student_id=None):
         """切換學生的啟用狀態"""
-        student = self.get_object()
+        student = get_object_or_404(Student, student_id=student_id)
         student.is_active = not student.is_active
         student.save()
         serializer = self.get_serializer(student)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def download_template(self, request):
+        """下載學生批量導入範本"""
+        # 創建一個包含範例數據的 DataFrame
+        df = pd.DataFrame({
+            'student_class': ['班級名稱'],  # 班級名稱，而不是ID
+            'student_id': ['s12345678'],  # 學號
+            'name': ['學生姓名'],  # 姓名
+            'password': ['password123'],  # 密碼
+        })
+
+        # 創建一個 BytesIO 對象
+        output = io.BytesIO()
+
+        # 將 DataFrame 寫入 Excel 文件
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='學生資料')
+
+        # 設置文件指針到開始位置
+        output.seek(0)
+
+        # 創建 HTTP 響應
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=student_import_template.xlsx'
+
+        return response
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def bulk_import(self, request):
@@ -117,12 +169,12 @@ class StudentViewSet(viewsets.ModelViewSet):
             with transaction.atomic():
                 for index, row in df.iterrows():
                     try:
-                        # 獲取班級
-                        student_class_id = row['student_class']
+                        # 獲取班級 - 使用班級名稱查詢
+                        student_class_name = str(row['student_class'])
                         try:
-                            student_class = StudentClass.objects.get(id=student_class_id)
+                            student_class = StudentClass.objects.get(name=student_class_name)
                         except StudentClass.DoesNotExist:
-                            raise ValueError(f"班級ID {student_class_id} 不存在")
+                            raise ValueError(f"班級名稱 '{student_class_name}' 不存在")
 
                         # 準備學生數據
                         student_data = {
@@ -130,11 +182,8 @@ class StudentViewSet(viewsets.ModelViewSet):
                             'name': row['name'],
                             'password': row['password'],
                             'student_class': student_class,
+                            'is_active': True  # 預設為啟用狀態
                         }
-
-                        # 如果有 is_active 列，則添加
-                        if 'is_active' in df.columns:
-                            student_data['is_active'] = bool(row['is_active'])
 
                         # 檢查學生ID是否已存在
                         if Student.objects.filter(student_id=student_data['student_id']).exists():
@@ -146,7 +195,7 @@ class StudentViewSet(viewsets.ModelViewSet):
                             name=student_data['name'],
                             password=student_data['password'],
                             student_class=student_data['student_class'],
-                            is_active=student_data.get('is_active', True)
+                            is_active=student_data['is_active']
                         )
 
                         results['success'] += 1
