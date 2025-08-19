@@ -1,5 +1,6 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 
+// UI imports
 import {
   Card,
   CardBody,
@@ -9,70 +10,39 @@ import {
 } from "@material-tailwind/react";
 import {ChevronDownIcon, ChevronUpIcon, PlusIcon} from "@heroicons/react/24/outline";
 
+// Component imports
 import SemesterUnitsComponent from './components/SemesterUnits';
 import StudentListComponent from './components/StudentList';
 import UnitReviewComponent from './components/UnitReview';
 
-import {AuthServices} from "../../utils/services/core";
-
+// Store imports
 import {useUserInfo} from "../../store/hooks/useUserInfo";
+import {useStudentClass} from "../../store/hooks/useStudentClass";
+
+// Service imports
+import {AuthServices} from "../../utils/services/core";
+import {StudentClassService} from "../../utils/services/studentClassService";
 
 const AdminHome = () => {
-  const [currentSemester, setCurrentSemester] = useState<string>("113-1");
-  const [showSemesterList, setShowSemesterList] = useState<boolean>(true);
-  const [showContentList, setShowContentList] = useState<boolean>(false);
-  const [currentContent, setCurrentContent] = useState<'unit' | 'students' | 'review'>("unit");
+  const [showSemesterList, setShowSemesterList] = React.useState<boolean>(true);
+  const [showContentList, setShowContentList] = React.useState<boolean>(false);
+  const [currentContent, setCurrentContent] = React.useState<'unit' | 'students' | 'review'>("unit");
 
   const {name} = useUserInfo();
+  const {
+    studentClasses,
+    loading,
+    currentClassId,
+    currentClass,
+    fetchData,
+    selectClass,
+    getUnitsForCurrentClass
+  } = useStudentClass();
 
   useEffect(() => {
-
-  }, [])
-
-  const semesters = [
-    {
-      id: "113-1",
-      name: "113-1學期",
-      units: [
-        {
-          name: "第一單元",
-          materials: ["教材一", "教材二"],
-          assignments: ["作業一", "作業二"]
-        },
-        {
-          name: "第二單元",
-          materials: ["教材一", "教材二"],
-          assignments: ["作業一", "作業二"]
-        },
-        {
-          name: "第三單元",
-          materials: ["教材一", "教材二"],
-          assignments: ["作業一", "作業二"]
-        },
-        {
-          name: "第四單元",
-          materials: [],
-          assignments: []
-        },
-        {
-          name: "第五單元",
-          materials: [],
-          assignments: []
-        }
-      ]
-    },
-    {
-      id: "113-2",
-      name: "113-2學期",
-      units: [
-        {
-          name: "第一單元",
-          materials: ["教材一"],
-          assignments: ["作業一"]
-        }
-      ]
-    }
-  ];
+    // 獲取班級、課程和課程任務數據
+    fetchData();
+  }, []);
 
   const contentOptions: Array<{ id: 'unit' | 'students' | 'review', name: string }> = [
     {id: "unit", name: "單元教材/作業"},
@@ -81,20 +51,52 @@ const AdminHome = () => {
   ];
 
   const renderContent = () => {
+    if (loading) {
+      return <div className="flex justify-center items-center h-64">
+        <Typography variant="h6" className="text-gray-500" placeholder={undefined}>
+          載入中...
+        </Typography>
+      </div>;
+    }
+
+    if (studentClasses.length === 0) {
+      return <div className="flex justify-center items-center h-64">
+        <Typography variant="h6" className="text-gray-500" placeholder={undefined}>
+          尚無班級資料
+        </Typography>
+      </div>;
+    }
+
     switch (currentContent) {
       case "unit":
-        return <SemesterUnitsComponent units={getCurrentSemester().units}/>;
+        return <SemesterUnitsComponent
+          units={getUnitsForCurrentClass()}
+          currentClassId={currentClassId}
+          onDataChange={fetchData}
+        />
       case "students":
-        return <StudentListComponent currentSemester={getCurrentSemester().name}/>;
+        return <StudentListComponent currentClassId={currentClassId} currentClassName={currentClass.name || ""}/>;
       case "review":
-        return <UnitReviewComponent/>;
+        return <UnitReviewComponent units={getUnitsForCurrentClass()} currentClassId={currentClassId}/>;
       default:
-        return <SemesterUnitsComponent units={getCurrentSemester().units}/>;
+        return <SemesterUnitsComponent
+          units={getUnitsForCurrentClass()}
+          currentClassId={currentClassId}
+          onDataChange={fetchData}
+        />
     }
   };
 
-  const getCurrentSemester = () => {
-    return semesters.find(s => s.id === currentSemester) || semesters[0];
+  const handleAddNewClass = async () => {
+    try {
+      const className = prompt("請輸入新班級名稱");
+      if (className) {
+        await StudentClassService.createStudentClass(className);
+        fetchData(); // 重新獲取資料
+      }
+    } catch (error) {
+      console.error("新增班級失敗:", error);
+    }
   };
 
   return (
@@ -105,16 +107,18 @@ const AdminHome = () => {
         </Typography>
 
         {/* 當前學期顯示 */}
-        <div className="flex justify-between mb-6 text-center">
-          <div className='flex space-x-2 w-[70%]'>
+        <div className="flex flex-col gap-y-2 md:flex-row justify-between items-center mb-6 text-center">
+          <div className='flex flex-col gap-y-2 items-center md:flex-row md:space-x-2 w-[70%]'>
             <Chip
               value={`當前登入：${name}`}
               className="bg-blue-600 text-white text-lg px-6 py-2"
             />
-            <Chip
-              value={getCurrentSemester().name}
-              className="bg-blue-600 text-white text-lg min-w-72 px-6 py-2"
-            />
+            {!loading && studentClasses.length > 0 && currentClass && (
+              <Chip
+                value={currentClass.name}
+                className="bg-blue-600 text-white text-lg min-w-44 px-6 py-2"
+              />
+            )}
           </div>
           <div>
             <Button
@@ -148,31 +152,38 @@ const AdminHome = () => {
 
               <Collapse open={showSemesterList} className="border-b pt-4">
                 <div className="mt-2 space-y-2">
-                  {semesters.map((semester) => (
-                    <Button
-                      key={semester.id}
-                      variant={currentSemester === semester.id ? "filled" : "text"}
-                      size="sm"
-                      className={`w-full justify-start ${
-                        currentSemester === semester.id
-                          ? "bg-blue-500 text-white"
-                          : "text-gray-600"
-                      }`}
-                      onClick={() => setCurrentSemester(semester.id)}
-                      placeholder={undefined}
-                    >
-                      {semester.name}
-                    </Button>
-                  ))}
-                  <Button
-                    color='orange'
-                    variant='text'
-                    size="sm"
-                    className='flex items-center justify-center w-full'
-                    placeholder={undefined}
-                  >
-                    <PlusIcon className="h-4 w-4"/>新增學期
-                  </Button>
+                  {loading ? (
+                    <div className="text-center p-2">載入中...</div>
+                  ) : (
+                    <>
+                      {studentClasses.map((cls) => (
+                        <Button
+                          key={cls.id}
+                          variant={currentClassId === cls.id ? "filled" : "text"}
+                          size="sm"
+                          className={`w-full justify-start ${
+                            currentClassId === cls.id
+                              ? "bg-blue-500 text-white"
+                              : "text-gray-600"
+                          }`}
+                          onClick={() => selectClass(cls.id)}
+                          placeholder={undefined}
+                        >
+                          {cls.name}
+                        </Button>
+                      ))}
+                      <Button
+                        color='orange'
+                        variant='text'
+                        size="sm"
+                        className='flex items-center justify-center w-full'
+                        onClick={handleAddNewClass}
+                        placeholder={undefined}
+                      >
+                        <PlusIcon className="h-4 w-4"/>新增學期
+                      </Button>
+                    </>
+                  )}
                 </div>
               </Collapse>
 
@@ -219,8 +230,7 @@ const AdminHome = () => {
         </div>
       </div>
     </div>
-  )
+  );
+};
 
-}
-
-export default AdminHome
+export default AdminHome;
