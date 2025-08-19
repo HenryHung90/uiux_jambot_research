@@ -14,8 +14,6 @@ class CourseSerializer(serializers.ModelSerializer):
             'is_active',
             'student_class',
             'student_class_detail',
-            'contents',
-            'content_url',
             'all_assistive_tool_analysis',
             'all_prompt_analysis',
             'created_at',
