@@ -7,8 +7,7 @@ import {
   API_getCoursesByClass,
   API_getCoursesByName,
   API_getCourseTasks,
-  API_toggleCourseActive,
-  API_updateCourseContent
+  API_toggleCourseActive, API_updateCourse,
 } from "../API/API_course";
 import {ICourseTask, ICourseTeacher, Req_createAndUpdateCourse} from "../API/interface";
 
@@ -63,7 +62,7 @@ export class CourseService {
   }
 
   static async updateCourseContent(courseId: string | number, reqData: Req_createAndUpdateCourse) {
-    const response = await API_updateCourseContent(courseId, reqData)
+    const response = await API_updateCourse(courseId, reqData)
     const resData: ICourseTeacher = response.data
     return resData
   }

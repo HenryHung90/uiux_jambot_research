@@ -2,13 +2,16 @@ import {configureStore} from '@reduxjs/toolkit'
 import {TypedUseSelectorHook, useDispatch, useSelector} from 'react-redux'
 
 import alertLoadingReducer from './slices/alertLoadingSlice'
-import userInfoSlice from "./slices/userInfoSlice";
+import userInfoReducer from "./slices/userInfoSlice";
+import studentClassReducer from "./slices/studentClassSlice";
+
 
 // 配置 store
 const store = configureStore({
   reducer: {
     alertLoading: alertLoadingReducer,
-    userInfo: userInfoSlice,
+    userInfo: userInfoReducer,
+    studentClass: studentClassReducer
   },
 })
 

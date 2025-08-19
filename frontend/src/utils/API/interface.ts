@@ -21,8 +21,6 @@ export interface ICourseStudent {
   id: number;
   name: string;
   student_id: string;
-  contents: string;
-  content_url: string;
 }
 
 export interface ICourseTeacher extends ICourseStudent {
@@ -45,6 +43,8 @@ export interface ICourseTask {
   student_class_detail: IStudentClass
   course_detail: ICourseTeacher
   contents: JSON
+  content_file?: string;
+  content_url?: string;
   all_assistive_tool_analysis: any
   all_prompt_analysis: any
   created_at?: string;
@@ -63,10 +63,11 @@ export interface IStudentCourseTask {
   id: number;
   student: IStudent;
   course_task: ICourseTask;
-  status: string;
-  submission: any;
-  score?: number;
-  feedback?: string;
+  task_file?: string;
+  task_link?: string;
+  assistive_tool_analysis?: any;
+  prompt_analysis?: any;
+  teacher_mark?: any;
   created_at?: string;
   updated_at?: string;
 }
@@ -91,6 +92,10 @@ export interface Req_changePassword extends RequestParams {
   new_password: string;
 }
 
+export interface Req_adminChangePassword extends RequestParams {
+  new_password: string;
+}
+
 export interface Req_createStudent extends RequestParams {
   student_id: string;
   name: string;
@@ -101,6 +106,7 @@ export interface Req_createStudent extends RequestParams {
 
 export interface Req_updateStudent extends RequestParams {
   name?: string;
+  student_id?: string;
   student_class?: number;
   is_active?: boolean;
 }
@@ -109,8 +115,6 @@ export interface Req_createAndUpdateCourse extends RequestParams {
   name?: string;
   student_class?: number;
   is_active?: boolean;
-  content_url?: string;
-  file?: File;
 }
 
 export interface Req_createAndUpdateCourseTask extends RequestParams {
@@ -118,6 +122,8 @@ export interface Req_createAndUpdateCourseTask extends RequestParams {
   student_class?: number;
   course?: number;
   contents?: JSON;
+  content_url?: string;
+  content_file?: File;
   all_assistive_tool_analysis?: JSON;
   all_prompt_analysis?: JSON;
 }

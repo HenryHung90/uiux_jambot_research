@@ -6,6 +6,8 @@ import {
   API_updateCourseTask
 } from "../API/API_courseTask";
 import {ICourseTask, Req_createAndUpdateCourseTask} from "../API/interface";
+import axios from "axios";
+import Cookies from "universal-cookie";
 
 export class CourseTaskService {
   static async getAllCourseTasks() {
@@ -20,13 +22,13 @@ export class CourseTaskService {
     return resData
   }
 
-  static async createCourseTask(reqData: Req_createAndUpdateCourseTask) {
+  static async createCourseTask(reqData: FormData) {
     const response = await API_createCourseTask(reqData)
     const resData: ICourseTask = response.data
     return resData
   }
 
-  static async updateCourseTask(taskId: string | number, reqData: Req_createAndUpdateCourseTask) {
+  static async updateCourseTask(taskId: string | number, reqData: FormData) {
     const response = await API_updateCourseTask(taskId, reqData)
     const resData: ICourseTask = response.data
     return resData

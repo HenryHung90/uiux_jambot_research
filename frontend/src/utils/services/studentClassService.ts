@@ -5,12 +5,39 @@ import {
   API_updateStudentClass
 } from "../API/API_studentClass";
 import {IStudentClass} from "../API/interface";
+import {API_getAllCourses} from "../API/API_course";
+import {API_getAllCourseTasks} from "../API/API_courseTask";
 
 export class StudentClassService {
   static async getAllStudentClass() {
     const response = await API_getAllStudentClasses()
     const resData: Array<IStudentClass> = response.data
     return resData
+  }
+
+  static async getCompletelyStudentClassInfo() {
+    const studentClasses = await API_getAllStudentClasses()
+    const courses = await API_getAllCourses()
+    const courseTasks = await API_getAllCourseTasks()
+
+    const completelyData = []
+
+    for (const studentClass of studentClasses.data) {
+      const classRelatedCourses = courses.data.filter(course => course.student_class === studentClass.id);
+
+      const coursesWithTasks = classRelatedCourses.map(course => {
+        const courseRelatedTasks = courseTasks.data.filter(task => task.course_detail.id === course.id);
+        return {
+          ...course,
+          courseTasks: courseRelatedTasks
+        };
+      });
+      completelyData.push({
+        ...studentClass,
+        courses: coursesWithTasks
+      });
+    }
+    return completelyData
   }
 
   static async getStudentClassById(id: string | number) {
