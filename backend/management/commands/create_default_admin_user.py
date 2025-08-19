@@ -37,13 +37,11 @@ class Command(BaseCommand):
                 teacher_user_password = os.getenv('TEACHER_USER_PASSWORD', 'yzu_cjcj')
 
                 if not Student.objects.filter(student_id=teacher_user_id).exists():
-                    Student.objects.create_user(
+                    Student.objects.create_superuser(
                         student_id=teacher_user_id,
                         name=teacher_user_name,
                         password=teacher_user_password,
-                        student_class=teacher_class,
-                        is_staff=True,
-                        is_active=True
+                        student_class=teacher_class
                     )
                     self.stdout.write(self.style.SUCCESS(f'成功創建教師用戶 {teacher_user_id}'))
                 else:
