@@ -1,0 +1,19 @@
+# Django 和 Django REST Framework
+Django>=3.2,<4.0
+djangorestframework>=3.12.0
+django-cors-headers>=3.7.0
+django-filter>=21.1           # 從 settings.py 中的 'django_filters' 發現
+django-extensions>=3.1.0      # 從 settings.py 中的 'django_extensions' 發現
+
+# 圖像處理和 OCR
+Pillow>=8.3.1                 # 圖像處理
+pytesseract>=0.3.8            # Tesseract OCR Python 介面
+easyocr>=1.4.1                # 如果需要使用 easyocr
+torch>=1.9.0                  # easyocr 依賴，建議一併安裝以避免版本不兼容問題
+torchvision>=0.10.0           # easyocr 依賴，建議一併安裝以避免版本不兼容問題
+
+# 其他工具
+python-dotenv>=0.19.0         # 環境變數管理，從 settings.py 中的 load_dotenv 發現
+requests>=2.26.0              # HTTP 請求
+
+whitenoise>=5.3.0             # 靜態文件服務
