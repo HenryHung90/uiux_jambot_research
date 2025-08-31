@@ -2,6 +2,8 @@ from django.db import models
 from .student_classes import StudentClass
 from .courses import Course
 
+def get_default_contents():
+    return {'content': 'This is new content'}
 
 class CourseTask(models.Model):
     name = models.CharField(max_length=200, verbose_name="作業名稱")
@@ -18,7 +20,7 @@ class CourseTask(models.Model):
         verbose_name="課程"
     )
     contents = models.JSONField(
-        default=dict,
+        default=get_default_contents,
         blank=True,
         null=True,
         verbose_name="作業內容"
