@@ -49,7 +49,9 @@ class Command(BaseCommand):
                     defaults={
                         'student_class': test_class,
                         'content_url': 'https://www.youtube.com',
-                        'contents': None,
+                        'contents': {
+                            'content': "這是一個測試課程任務的內容",
+                        },
                     }
                 )
                 if created1_1:
@@ -72,16 +74,15 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.WARNING('課程任務 task 1-2 已存在'))
 
                 pdf_path = os.path.join('files', 'test_file', 'test_PDF.pdf')
-                upload_pdf_path = os.path.join('files', 'course_task_files', 'test_PDF.pdf')
 
-                is_pdf_exist = os.path.exists(pdf_path) and os.path.exists(upload_pdf_path)
+                is_pdf_exist = os.path.exists(pdf_path)
 
                 if is_pdf_exist:
                     with open(pdf_path, 'rb') as f:
                         task1_2.content_file.save('test_PDF.pdf', File(f), save=True)
                     self.stdout.write(self.style.SUCCESS(f'成功上傳PDF文件到課程任務 task 1-2'))
                 else:
-                    self.stdout.write(self.style.ERROR(f'PDF 文件不存在或已經建立: {pdf_path}'))
+                    self.stdout.write(self.style.ERROR(f'PDF 文件不存在 {pdf_path}'))
 
                 task2_1, created2_1 = CourseTask.objects.get_or_create(
                     name='task 2-1',
@@ -89,7 +90,9 @@ class Command(BaseCommand):
                     defaults={
                         'student_class': test_class,
                         'content_url': 'https://www.google.com',
-                        'contents': None,
+                        'contents': {
+                            'content': "這是一個測試課程任務的內容",
+                        },
                     }
                 )
                 if created2_1:
@@ -117,7 +120,7 @@ class Command(BaseCommand):
                         task2_2.content_file.save('test_PDF.pdf', File(f), save=True)
                     self.stdout.write(self.style.SUCCESS(f'成功上傳 PDF 文件到課程任務 task 2-2'))
                 else:
-                    self.stdout.write(self.style.ERROR(f'PDF 文件不存在或已經建立: {pdf_path}'))
+                    self.stdout.write(self.style.ERROR(f'PDF 文件不存在 {pdf_path}'))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'創建測試課程和任務時發生錯誤: {str(e)}'))
