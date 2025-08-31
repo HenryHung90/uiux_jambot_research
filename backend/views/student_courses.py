@@ -14,12 +14,13 @@ from ..serializers.student_course_task_serializer import StudentCourseTaskSerial
 
 
 class StudentCourseFilter(django_filters.FilterSet):
-    student = django_filters.NumberFilter(field_name="student_id")
+    student = django_filters.CharFilter(field_name="student__student_id")
     course = django_filters.NumberFilter(field_name="course_id")
 
     class Meta:
         model = StudentCourse
         fields = ['student', 'course']
+
 
 class StudentCourseViewSet(viewsets.ModelViewSet):
     queryset = StudentCourse.objects.all()
@@ -34,7 +35,8 @@ class StudentCourseViewSet(viewsets.ModelViewSet):
         student_course = self.get_object()
         student_course_tasks = StudentCourseTask.objects.filter(
             student=student_course.student,
-            course_task__course=student_course.course
+            course=student_course.course
         )
+
         serializer = StudentCourseTaskSerializer(student_course_tasks, many=True)
         return Response(serializer.data)

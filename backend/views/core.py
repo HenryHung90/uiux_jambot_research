@@ -124,7 +124,7 @@ def login_system(request):
 
         return Response(
             {'message': 'success', 'name': student_info.name, 'student_id': student_info.student_id,
-             'is_teacher': student_info.is_superuser},
+             'is_teacher': student_info.is_superuser, 'student_class_id': student_info.student_class.id},
             status=status.HTTP_200_OK)
 
     except Exception as e:
@@ -158,7 +158,7 @@ def userinfo_view(request):
             student_info = Student.objects.get(student_id=request.user.student_id)
             return Response(
                 {'message': 'success', 'name': student_info.name, 'student_id': student_info.student_id,
-                 'is_teacher': student_info.is_superuser},
+                 'is_teacher': student_info.is_superuser, 'student_class_id': student_info.student_class.id},
                 status=status.HTTP_200_OK)
         else:
             return Response({'isAuthenticated': request.user.is_authenticated}, status=status.HTTP_200_OK)

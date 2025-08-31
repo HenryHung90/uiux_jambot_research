@@ -2,9 +2,11 @@ from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import status
 
-from ..models import CourseTask
+from ..models import CourseTask, StudentCourse
 from ..models.courses import Course
+from ..models.students import Student
 from ..serializers.course_serializer import CourseSerializer
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -22,6 +24,7 @@ class CourseFilter(django_filters.FilterSet):
         model = Course
         fields = ['student_class', 'is_active', 'name']
 
+
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
@@ -29,6 +32,21 @@ class CourseViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = CourseFilter
     search_fields = ['is_active', 'student_class', 'name']
+
+    def create(self, request, *args, **kwargs):
+        """創建課程並為該班級的所有學生創建 StudentCourse 記錄"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        course = serializer.instance
+
+        students = Student.objects.filter(student_class=course.student_class, is_active=True)
+
+        for student in students:
+            StudentCourse.objects.create(student=student, course=course)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=['put', 'patch'])
     def update_content(self, request, pk=None):
