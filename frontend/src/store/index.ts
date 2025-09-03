@@ -11,7 +11,7 @@ const store = configureStore({
   reducer: {
     alertLoading: alertLoadingReducer,
     userInfo: userInfoReducer,
-    studentClass: studentClassReducer
+    studentClass: studentClassReducer,
   },
 })
 

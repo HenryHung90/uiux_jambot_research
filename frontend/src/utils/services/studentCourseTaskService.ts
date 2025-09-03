@@ -33,7 +33,7 @@ export class StudentCourseTaskService {
     return resData
   }
 
-  static async updateStudentCourseTask(taskId: string | number, reqData: Req_createAndUpdateStudentCourseTask) {
+  static async updateStudentCourseTask(taskId: string | number, reqData: FormData) {
     const response = await API_updateStudentCourseTask(taskId, reqData)
     const resData: IStudentCourseTask = response.data
     return resData
