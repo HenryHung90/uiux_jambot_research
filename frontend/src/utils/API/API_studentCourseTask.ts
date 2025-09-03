@@ -33,7 +33,7 @@ export const API_createStudentCourseTask = (taskData: Req_createAndUpdateStudent
  * @param taskData 學生課程任務更新數據
  * @returns Promise 返回更新結果
  */
-export const API_updateStudentCourseTask = (taskId: string | number, taskData: Req_createAndUpdateStudentCourseTask) => {
+export const API_updateStudentCourseTask = (taskId: string | number, taskData: FormData) => {
   return new API_PUT(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/`, taskData).sendRequest()
 }
 
