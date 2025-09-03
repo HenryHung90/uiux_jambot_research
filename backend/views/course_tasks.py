@@ -18,6 +18,7 @@ class CourseTaskViewSet(viewsets.ModelViewSet):
         student_class = course_task.student_class
         students = student_class.students.all()
 
+
         student_course_tasks = []
         for student in students:
             student_course_task = StudentCourseTask(
@@ -26,7 +27,9 @@ class CourseTaskViewSet(viewsets.ModelViewSet):
                 course_task=course_task
             )
             student_course_tasks.append(student_course_task)
+            print("1", student_course_tasks)
 
+        print("2", student_course_tasks)
         if student_course_tasks:
             StudentCourseTask.objects.bulk_create(student_course_tasks)
 
