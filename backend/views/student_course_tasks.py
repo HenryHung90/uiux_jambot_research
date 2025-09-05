@@ -14,9 +14,6 @@ from stopwordsiso import stopwords
 import json
 import os
 import openai
-import base64
-from PIL import Image
-import io
 
 from ..models.student_course_tasks import StudentCourseTask
 from ..serializers.student_course_task_serializer import StudentCourseTaskSerializer
@@ -335,7 +332,8 @@ class StudentCourseTaskViewSet(viewsets.ModelViewSet):
                 return Response({
                     'keyword_analysis': task.keyword_analysis,
                     'assistive_tool_analysis': task.assistive_tool_analysis,
-                    'prompt_analysis': task.prompt_analysis
+                    'prompt_analysis': task.prompt_analysis,
+                    'is_analyzed': task.is_analyzed
                 })
 
             # 如果沒有分析結果，進行分析
@@ -366,6 +364,10 @@ class StudentCourseTaskViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
 
+            # 4. 更新分析狀態
+            task.is_analyzed = True
+            task.save()
+
             # 刷新資料
             task.refresh_from_db()
 
@@ -373,7 +375,8 @@ class StudentCourseTaskViewSet(viewsets.ModelViewSet):
             return Response({
                 'keyword_analysis': task.keyword_analysis,
                 'assistive_tool_analysis': task.assistive_tool_analysis,
-                'prompt_analysis': task.prompt_analysis
+                'prompt_analysis': task.prompt_analysis,
+                'is_analyzed': task.is_analyzed
             })
 
         except Exception as e:

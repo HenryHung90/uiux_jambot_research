@@ -86,8 +86,6 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
         }
       });
 
-      console.log(submissionMap)
-
       // 整合學生和提交資料
       const allStudentSubmissions = students.map(student => {
         const existingSubmission = submissionMap[student.student_id];
@@ -102,6 +100,7 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
             },
             task_file: existingSubmission.task_file,
             task_link: existingSubmission.task_link,
+            is_analyzed: existingSubmission.is_analyzed,
             created_at: existingSubmission.created_at,
             course_task: courseTaskId
           };

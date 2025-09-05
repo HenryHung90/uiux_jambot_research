@@ -23,6 +23,7 @@ interface StudentSubmission {
   task_link?: string;
   created_at?: string;
   course_task?: number;
+  is_analyzed?: boolean; // 新增 is_analyzed 欄位
 }
 
 interface SubmissionDetailDialogProps {
@@ -42,12 +43,9 @@ const SubmissionDetailComponent: React.FC<SubmissionDetailDialogProps> = ({
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [localSubmission, setLocalSubmission] = useState<StudentSubmission | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   // 當submission變更時，更新本地狀態
   useEffect(() => {
     setLocalSubmission(submission);
-    // 重置分析結果
-    setAnalysisResult(null);
   }, [submission]);
 
   // 格式化日期
@@ -322,7 +320,8 @@ const SubmissionDetailComponent: React.FC<SubmissionDetailDialogProps> = ({
 
             <AnalyticDetailComponent
               taskFile={localSubmission.task_file}
-              taskId={localSubmission.id}
+              taskId={localSubmission.id || 0}
+              isAnalyzed={localSubmission.is_analyzed}
             />
           </div>
         ) : (

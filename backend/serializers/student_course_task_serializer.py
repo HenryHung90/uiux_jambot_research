@@ -24,6 +24,7 @@ class StudentCourseTaskSerializer(serializers.ModelSerializer):
             'keyword_analysis',
             'teacher_mark',
             'ocr_content',
+            'is_analyzed',
             'created_at',
             'updated_at'
         ]

@@ -35,12 +35,9 @@ const AdminHome = () => {
   const [showContentList, setShowContentList] = React.useState<boolean>(false);
   const [showAdminTools, setShowAdminTools] = React.useState<boolean>(false);
   const [currentContent, setCurrentContent] = React.useState<'unit' | 'students' | 'review'>("unit");
-  const [syncDialogOpen, setSyncDialogOpen] = useState<boolean>(false);
-  const [syncInProgress, setSyncInProgress] = useState<boolean>(false);
-  const [syncResult, setSyncResult] = useState<string>("");
 
   const {name} = useUserInfo();
-  const {setAlertLog} = useAlertLoading();
+  const {setAlertLog, setLoadingOpen} = useAlertLoading();
   const {
     studentClasses,
     loading,
@@ -112,22 +109,29 @@ const AdminHome = () => {
   };
 
   const handleSyncStudentCourses = async () => {
-    setSyncDialogOpen(true);
-    setSyncInProgress(true);
-    setSyncResult("");
-
+    setLoadingOpen(true);
     try {
-      // 同步所有學生，不考慮當前選擇的班級
-      const result = await AdminService.syncStudentCourses({});
+      const result = await AdminService.syncStudentCourses();
 
-      setSyncResult(result.details || "同步完成，但沒有詳細資訊");
-      setAlertLog("成功", "學生課程同步完成");
+      // 構建顯示訊息
+      const successTitle = "同步完成";
+      let detailsMessage = result.message || "學生課程同步已完成";
+
+      // 如果有數據，則添加到詳細信息中
+      if (result.data) {
+        const { total_students, created_student_courses, created_student_course_tasks } = result.data;
+        detailsMessage += `\n處理了 ${total_students} 名學生，創建了 ${created_student_courses} 個學生課程記錄，創建了 ${created_student_course_tasks} 個學生課程任務記錄`;
+      }
+
+      // 使用 AlertLog 顯示成功訊息
+      setAlertLog(successTitle, detailsMessage);
     } catch (error) {
       console.error("同步學生課程失敗:", error);
-      setSyncResult("同步失敗，請查看控制台獲取詳細錯誤信息");
-      setAlertLog("錯誤", "學生課程同步失敗");
+
+      // 使用 AlertLog 顯示錯誤訊息
+      setAlertLog("同步失敗", "同步學生課程失敗，請稍後再試");
     } finally {
-      setSyncInProgress(false);
+      setLoadingOpen(false);
     }
   };
 
@@ -290,40 +294,6 @@ const AdminHome = () => {
           </div>
         </div>
       </div>
-
-      {/* 同步對話框 */}
-      <Dialog open={syncDialogOpen} handler={() => setSyncDialogOpen(false)} size="lg" placeholder={undefined}>
-        <DialogHeader placeholder={undefined}>
-          同步學生課程和課程任務
-        </DialogHeader>
-        <DialogBody placeholder={undefined}>
-          {syncInProgress ? (
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <Spinner className="h-12 w-12" color="blue" />
-              <Typography placeholder={undefined}>
-                正在同步，請稍候...
-              </Typography>
-            </div>
-          ) : (
-            <div className="max-h-96 overflow-y-auto">
-              <Typography className="whitespace-pre-wrap font-mono text-sm" placeholder={undefined}>
-                {syncResult}
-              </Typography>
-            </div>
-          )}
-        </DialogBody>
-        <DialogFooter placeholder={undefined}>
-          <Button
-            variant="filled"
-            color="blue"
-            onClick={() => setSyncDialogOpen(false)}
-            disabled={syncInProgress}
-            placeholder={undefined}
-          >
-            關閉
-          </Button>
-        </DialogFooter>
-      </Dialog>
     </div>
   );
 };

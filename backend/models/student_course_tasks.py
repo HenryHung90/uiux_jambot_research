@@ -72,6 +72,11 @@ class StudentCourseTask(models.Model):
         verbose_name="關鍵詞分析"
     )
 
+    is_analyzed = models.BooleanField(
+        default=False,
+        verbose_name="是否已分析"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

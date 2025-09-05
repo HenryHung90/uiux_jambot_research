@@ -11,13 +11,14 @@ import {StudentCourseTaskService} from "../../utils/services/studentCourseTaskSe
 interface AnalyticDetailProps {
   taskId: number;
   taskFile?: string;
+  isAnalyzed?: boolean; // 新增 isAnalyzed 屬性
 }
 
-const AnalyticDetailComponent: React.FC<AnalyticDetailProps> = ({taskFile, taskId}) => {
+const AnalyticDetailComponent: React.FC<AnalyticDetailProps> = ({taskFile, taskId, isAnalyzed = false}) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
-  const [hasAnalysisResults, setHasAnalysisResults] = useState<boolean>(false);
+  const [hasAnalysisResults, setHasAnalysisResults] = useState<boolean>(isAnalyzed); // 使用 isAnalyzed 初始化
   const [assistiveToolAnalysis, setAssistiveToolAnalysis] = useState<any>(null);
   const [keywordAnalysis, setKeywordAnalysis] = useState<any>(null);
   const [promptAnalysis, setPromptAnalysis] = useState<any>(null);
@@ -35,11 +36,10 @@ const AnalyticDetailComponent: React.FC<AnalyticDetailProps> = ({taskFile, taskI
 
     try {
       const response: any = await StudentCourseTaskService.analyzeStudentCourseTask(taskId);
-
-      if (response && response.data) {
-        setAssistiveToolAnalysis(response.data.assistive_tool_analysis);
-        setKeywordAnalysis(response.data.keyword_analysis);
-        setPromptAnalysis(response.data.prompt_analysis);
+      if (response) {
+        setAssistiveToolAnalysis(response.assistive_tool_analysis);
+        setKeywordAnalysis(response.keyword_analysis);
+        setPromptAnalysis(response.prompt_analysis);
         setHasAnalysisResults(true)
       }
     } catch (error) {
@@ -50,17 +50,20 @@ const AnalyticDetailComponent: React.FC<AnalyticDetailProps> = ({taskFile, taskI
   };
 
   useEffect(() => {
+    // 只有當 isAnalyzed 為 true 或已經有分析結果時才獲取數據
     const fetchData = async () => {
-      const response: any = await StudentCourseTaskService.getStudentCourseTaskById(taskId);
-      if (response) {
-        setAssistiveToolAnalysis(response.assistive_tool_analysis);
-        setKeywordAnalysis(response.keyword_analysis);
-        setPromptAnalysis(response.prompt_analysis);
-        setHasAnalysisResults(true)
+      if (isAnalyzed) {
+        const response: any = await StudentCourseTaskService.getStudentCourseTaskById(taskId);
+        if (response) {
+          setAssistiveToolAnalysis(response.assistive_tool_analysis);
+          setKeywordAnalysis(response.keyword_analysis);
+          setPromptAnalysis(response.prompt_analysis);
+          setHasAnalysisResults(true);
+        }
       }
     }
-    fetchData()
-  }, []);
+    fetchData();
+  }, [isAnalyzed, taskId]);
 
   return (
     <div className="bg-gray-50 p-4 rounded-lg">
@@ -70,7 +73,7 @@ const AnalyticDetailComponent: React.FC<AnalyticDetailProps> = ({taskFile, taskI
           onClick={handleAnalyze}
           color="purple"
           size="sm"
-          disabled={isAnalyzing || !taskFile}
+          disabled={isAnalyzing || !taskFile || (isAnalyzed && hasAnalysisResults)} // 如果已分析過且有結果則禁用按鈕
           className="flex items-center"
           placeholder={undefined}
         >
@@ -78,6 +81,15 @@ const AnalyticDetailComponent: React.FC<AnalyticDetailProps> = ({taskFile, taskI
             <>
               <Spinner className="h-4 w-4 mr-2"/>
               辨識中...
+            </>
+          ) : isAnalyzed && hasAnalysisResults ? (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M5 13l4 4L19 7" />
+              </svg>
+              已完成分析
             </>
           ) : (
             <>

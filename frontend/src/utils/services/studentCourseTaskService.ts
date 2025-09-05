@@ -66,6 +66,6 @@ export class StudentCourseTaskService {
 
   static async analyzeStudentCourseTask(taskId: string | number) {
     const response = await API_analyzeStudentCourseTask(taskId)
-    console.log(response)
+    return response.data
   }
 }

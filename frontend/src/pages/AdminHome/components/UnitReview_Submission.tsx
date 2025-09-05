@@ -27,6 +27,7 @@ interface StudentSubmission {
   task_link?: string;
   created_at?: string;
   course_task?: number;
+  is_analyzed?: boolean;
 }
 
 interface SubmissionComponentProps {
@@ -91,14 +92,6 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
     setShowSubmissionDetail(false);
   };
 
-  // 渲染勾勾或叉叉
-  const renderCheckOrCross = (condition: boolean) => {
-    return condition ? (
-      <span className="text-green-500 font-bold">✓</span>
-    ) : (
-      <span className="text-red-500 font-bold">✗</span>
-    );
-  };
 
   // 如果不是開啟狀態，不渲染任何內容
   if (!open) return null;
@@ -166,8 +159,8 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
                             <tr className="bg-gray-100 text-gray-700">
                               <th className="py-2 px-4 text-left">學號</th>
                               <th className="py-2 px-4 text-left">姓名</th>
-                              <th className="py-2 px-4 text-center">檔案</th>
-                              <th className="py-2 px-4 text-center">連結</th>
+                              <th className="py-2 px-4 text-center">繳交狀態</th>
+                              <th className="py-2 px-4 text-center">分析狀態</th>
                               <th className="py-2 px-4 text-left">繳交時間</th>
                               <th className="py-2 px-4 text-center">操作</th>
                             </tr>
@@ -177,8 +170,32 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
                               <tr key={submission.student.student_id} className="border-b hover:bg-gray-50 cursor-pointer" onClick={() => handleViewSubmissionDetail(submission)}>
                                 <td className="py-2 px-4">{submission.student.student_id}</td>
                                 <td className="py-2 px-4">{submission.student.name}</td>
-                                <td className="py-2 px-4 text-center">{renderCheckOrCross(!!submission.task_file)}</td>
-                                <td className="py-2 px-4 text-center">{renderCheckOrCross(!!submission.task_link)}</td>
+                                <td className="py-2 px-4 text-center">
+                                  {submission.task_file && submission.task_link ? (
+                                    <span className="text-green-500 font-bold">檔案+連結</span>
+                                  ) : submission.task_file ? (
+                                    <span className="text-green-500 font-bold">檔案</span>
+                                  ) : submission.task_link ? (
+                                    <span className="text-green-500 font-bold">連結</span>
+                                  ) : (
+                                    <span className="text-red-500 font-bold">無</span>
+                                  )}
+                                </td>
+                                <td className="py-2 px-4 text-center">
+                                  {submission.is_analyzed ? (
+                                    <Chip
+                                      value="已分析"
+                                      color="green"
+                                      size="sm"
+                                    />
+                                  ) : (
+                                    <Chip
+                                      value="未分析"
+                                      color="amber"
+                                      size="sm"
+                                    />
+                                  )}
+                                </td>
                                 <td className="py-2 px-4">{formatDate(submission.created_at || '')}</td>
                                 <td className="py-2 px-4 text-center">
                                   <Button

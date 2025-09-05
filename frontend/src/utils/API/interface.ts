@@ -72,6 +72,7 @@ export interface IStudentCourseTask {
   assistive_tool_analysis?: any;
   prompt_analysis?: any;
   teacher_mark?: any;
+  is_analyzed: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -148,12 +149,6 @@ export interface Req_createAndUpdateStudentCourseTask extends RequestParams {
 
 export interface Req_submitMark extends RequestParams {
   teacher_mark: any;
-}
-
-
-export interface Req_syncStudentCourses extends RequestParams {
-  student_id?: string;
-  class_id?: number;
 }
 //--------------------------------------------------------
 // API Response Extension
