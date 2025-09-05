@@ -1,4 +1,5 @@
 import {
+  API_analyzeStudentCourseTask,
   API_createStudentCourseTask,
   API_deleteStudentCourseTask,
   API_getAllStudentCourseTasks,
@@ -61,5 +62,10 @@ export class StudentCourseTaskService {
     const response = await API_submitMark(taskId, reqData)
     const resData: IStudentCourseTask = response.data
     return resData
+  }
+
+  static async analyzeStudentCourseTask(taskId: string | number) {
+    const response = await API_analyzeStudentCourseTask(taskId)
+    console.log(response)
   }
 }

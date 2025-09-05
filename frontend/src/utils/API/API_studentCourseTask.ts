@@ -73,3 +73,12 @@ export const API_getStudentCourseTasksByCourseTask = (courseTaskId: string | num
 export const API_submitMark = (taskId: string | number, markData: Req_submitMark) => {
   return new API_POST(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/submit_mark/`, markData).sendRequest()
 }
+
+/**
+ * 分析學生課程任務內容
+ * @param taskId 學生課程任務ID
+ * @returns Promise 返回分析結果，包括OCR、關鍵詞、輔助工具與提示詞分析
+ */
+export const API_analyzeStudentCourseTask = (taskId: string | number) => {
+  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/analyze_task/`).sendRequest()
+}

@@ -19,8 +19,6 @@ const useWordCloudContext = () => {
 interface WordCloudState {
   words: Array<{ text: string, value: number }>
   filteredWords: Array<{ text: string, value: number }>
-  maxWords: number
-  setMaxWords: React.Dispatch<React.SetStateAction<number>>
   hideCode: boolean
   setHideCode: React.Dispatch<React.SetStateAction<boolean>>
   scale: 'linear' | 'log' | 'sqrt'
@@ -64,8 +62,6 @@ const ControlPanel = memo((props: ControlPanelProps) => {
   const {
     words,
     filteredWords,
-    maxWords,
-    setMaxWords,
     scale,
     setScale,
     hideCode,
@@ -135,23 +131,6 @@ const ControlPanel = memo((props: ControlPanelProps) => {
       }`}>
       <h3 className="text-lg font-bold mb-4">文字雲設置</h3>
 
-      {/* 最大顯示數量 */}
-      <div className="mb-4">
-        <label className="block mb-1 font-medium text-sm" htmlFor="maxWords">
-          最大顯示數量: {maxWords}
-        </label>
-        <input
-          id="maxWords"
-          type="range"
-          min="10"
-          max="300"
-          step="10"
-          value={maxWords}
-          onChange={(e) => setMaxWords(parseInt(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-        />
-      </div>
-
       {/* 隱藏程式碼 */}
       <div className="mb-4">
         <div className="flex items-center gap-2">
@@ -215,7 +194,6 @@ const WordCloudComponent = (props: WorldCloudProps) => {
   const {words} = props;
 
   // 狀態管理
-  const [maxWords, setMaxWords] = useState<number>(150);
   const [hideCode, setHideCode] = useState<boolean>(false);
   const [scale, setScale] = useState<'linear' | 'log' | 'sqrt'>('log');
   const [spiral, setSpiral] = useState<'archimedean' | 'rectangular'>('archimedean');
@@ -236,15 +214,13 @@ const WordCloudComponent = (props: WorldCloudProps) => {
   const contextValue = useMemo(() => ({
     words,
     filteredWords,
-    maxWords,
-    setMaxWords,
     hideCode,
     setHideCode,
     scale,
     setScale,
     spiral,
     setSpiral
-  }), [maxWords, hideCode, scale, spiral]);
+  }), [hideCode, scale, spiral]);
 
   // 文字雲選項
   const options = useMemo(() => ({
@@ -279,7 +255,7 @@ const WordCloudComponent = (props: WorldCloudProps) => {
           <WordCloudRenderer
             words={filteredWords}
             options={options}
-            maxWords={maxWords}
+            maxWords={100}
           />
         </div>
       </div>
