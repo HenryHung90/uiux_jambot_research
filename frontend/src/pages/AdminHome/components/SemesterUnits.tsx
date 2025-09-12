@@ -50,12 +50,11 @@ const SemesterUnitsComponent = (props: SemesterUnitsProps) => {
 
   // 處理查看教材
   const handleViewMaterial = (material: Material) => {
-    alert(material.content_file)
     if (material.content_url) {
       window.open(material.content_url, '_blank');
       return;
     } else if (material.content_file) {
-      window.open(material.content_file, '_blank');
+      window.location.href = material.content_file;
       return;
     } else {
       alert("此教材沒有可用的連結或檔案");
