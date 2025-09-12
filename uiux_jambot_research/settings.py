@@ -133,7 +133,7 @@ if PROCESS_ON_PRODUCTION:
             'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
-    
+
     # 生產環境 - 使用子路徑
     MIDDLEWARE_EXEMPT_PATHS = [
         '/api/login',
@@ -145,6 +145,16 @@ if PROCESS_ON_PRODUCTION:
         '/vite.svg'
     ]
     MIDDLEWARE_ADMIN_PREFIX = '/taskmind/api/admin/'
+
+    CORS_ALLOWED_ORIGINS = [
+        "http://cj5418.synology.me:8080",
+        "https://cj5418.synology.me:8080",
+    ]
+    CSRF_TRUSTED_ORIGINS = [
+        "http://cj5418.synology.me:8080",
+        "https://cj5418.synology.me:8080",
+    ]
+    CORS_ALLOW_CREDENTIALS = True
 else:
     # 開發環境使用 SQLite3
     DATABASES = {
@@ -153,7 +163,7 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-    
+
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:5173",  # Vite 開發伺服器的預設位址
     ]
