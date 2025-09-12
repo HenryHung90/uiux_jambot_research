@@ -185,7 +185,7 @@ const SubmissionDetailComponent: React.FC<SubmissionDetailDialogProps> = ({
                   {isImageFile(localSubmission.task_file) && (
                     <div className="mt-2 mb-2">
                       <img
-                        src={localSubmission.task_file + `?t=${new Date().getTime()}`} // 添加時間戳防止緩存
+                        src={'/files/' + localSubmission.task_file.split('/files/')[1] + `?t=${new Date().getTime()}`} // 添加時間戳防止緩存
                         alt="提交的圖片"
                         className="max-w-full h-auto rounded-lg border border-gray-200 shadow-sm"
                         width='480px'
