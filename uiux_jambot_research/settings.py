@@ -24,12 +24,12 @@ load_dotenv(dotenv_path='.env')
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-59tdvwhooe$y0b1x)7ge7#=$yekud!4@oyi&q^$cfoe+mu1^#_"
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-59tdvwhooe$y0b1x)7ge7#=$yekud!4@oyi&q^$cfoe+mu1^#_")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 AUTH_USER_MODEL = 'backend.Student'
 
@@ -118,12 +118,57 @@ WSGI_APPLICATION = "uiux_jambot_research.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# Determine whether the environment is production or development
+PROCESS_ON_PRODUCTION = os.getenv('PROCESS_ON_PRODUCTION', 'False').lower() == 'true'
+
+if PROCESS_ON_PRODUCTION:
+    # 生產環境使用 PostgreSQL
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'uiux_jambot'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
+            'HOST': os.getenv('DB_HOST', 'db'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
     }
-}
+    
+    # 生產環境 - 使用子路徑
+    MIDDLEWARE_EXEMPT_PATHS = [
+        '/api/login',
+        '/',
+        '/files/img/logo.PNG',
+        '/vite.svg',
+        '/',
+        '/files/img/logo.PNG',
+        '/vite.svg'
+    ]
+    MIDDLEWARE_ADMIN_PREFIX = '/taskmind/api/admin/'
+else:
+    # 開發環境使用 SQLite3
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+    
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:5173",  # Vite 開發伺服器的預設位址
+    ]
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:5173",  # Vite 開發伺服器的預設位址
+    ]
+    CORS_ALLOW_CREDENTIALS = True
+    # 開發環境 - 直接路徑
+    MIDDLEWARE_EXEMPT_PATHS = [
+        '/api/login',
+        '/',
+        '/files/img/logo.PNG',
+        '/vite.svg'
+    ]
+    MIDDLEWARE_ADMIN_PREFIX = '/api/admin/'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -169,35 +214,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, os.getenv('MEDIA_ROOT', 'files'))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Determine whether the environment is production or development
-PROCESS_ON_PRODUCTION = os.getenv('PROCESS_ON_PRODUCTION', False).lower() == 'true'
-
-# 根據環境設定不同的 exempt paths
-if PROCESS_ON_PRODUCTION:
-    # 生產環境 - 使用子路徑
-    MIDDLEWARE_EXEMPT_PATHS = [
-        '/api/login',
-        '/',
-        '/files/img/logo.PNG',
-        '/vite.svg',
-        '/',
-        '/files/img/logo.PNG',
-        '/vite.svg'
-    ]
-    MIDDLEWARE_ADMIN_PREFIX = '/taskmind/api/admin/'
-else:
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:5173",  # Vite 開發伺服器的預設位址
-    ]
-    CSRF_TRUSTED_ORIGINS = [
-        "http://localhost:5173",  # Vite 開發伺服器的預設位址
-    ]
-    CORS_ALLOW_CREDENTIALS = True
-    # 開發環境 - 直接路徑
-    MIDDLEWARE_EXEMPT_PATHS = [
-        '/api/login',
-        '/',
-        '/files/img/logo.PNG',
-        '/vite.svg'
-    ]
-    MIDDLEWARE_ADMIN_PREFIX = '/api/admin/'
+# 打印數據庫配置以便調試
+print(f"DATABASE CONFIG: {DATABASES['default']}")
+print(f"PROCESS_ON_PRODUCTION: {PROCESS_ON_PRODUCTION}")
+print(f"DB_USER: {os.getenv('DB_USER', 'not set')}")
+print(f"DB_HOST: {os.getenv('DB_HOST', 'not set')}")
