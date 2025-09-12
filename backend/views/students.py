@@ -7,6 +7,10 @@ from django.db import transaction
 from django.http import HttpResponse
 from ..models.students import Student
 from ..models.student_classes import StudentClass
+from ..models.courses import Course
+from ..models.course_tasks import CourseTask
+from ..models.student_courses import StudentCourse
+from ..models.student_course_tasks import StudentCourseTask
 from ..serializers.student_serializer import StudentSerializer, StudentCreateSerializer
 
 import pandas as pd
@@ -39,6 +43,44 @@ class StudentViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return StudentCreateSerializer
         return StudentSerializer
+
+    def create(self, request, *args, **kwargs):
+        """創建單個學生"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # 使用事務確保數據一致性
+        with transaction.atomic():
+            # 保存學生資料
+            student = serializer.save()
+
+            # 獲取學生的班級
+            student_class = student.student_class
+
+            # 檢查該班級是否有關聯的課程
+            courses = Course.objects.filter(student_class=student_class)
+
+            # 為每個課程創建 StudentCourse 記錄
+            for course in courses:
+                # 創建學生課程關聯
+                student_course = StudentCourse.objects.create(
+                    student=student,
+                    course=course
+                )
+
+                # 檢查該課程是否有關聯的課程任務
+                course_tasks = CourseTask.objects.filter(course=course)
+
+                # 為每個課程任務創建 StudentCourseTask 記錄
+                for course_task in course_tasks:
+                    StudentCourseTask.objects.create(
+                        student=student,
+                        course=course,
+                        course_task=course_task
+                    )
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def change_password(self, request, student_id=None):
@@ -190,13 +232,35 @@ class StudentViewSet(viewsets.ModelViewSet):
                             raise ValueError(f"學號 {student_data['student_id']} 已存在")
 
                         # 創建學生
-                        Student.objects.create_user(
+                        student = Student.objects.create_user(
                             student_id=student_data['student_id'],
                             name=student_data['name'],
                             password=student_data['password'],
                             student_class=student_data['student_class'],
                             is_active=student_data['is_active']
                         )
+
+                        # 檢查該班級是否有關聯的課程
+                        courses = Course.objects.filter(student_class=student_class)
+
+                        # 為每個課程創建 StudentCourse 記錄
+                        for course in courses:
+                            # 創建學生課程關聯
+                            student_course = StudentCourse.objects.create(
+                                student=student,
+                                course=course
+                            )
+
+                            # 檢查該課程是否有關聯的課程任務
+                            course_tasks = CourseTask.objects.filter(course=course)
+
+                            # 為每個課程任務創建 StudentCourseTask 記錄
+                            for course_task in course_tasks:
+                                StudentCourseTask.objects.create(
+                                    student=student,
+                                    course=course,
+                                    course_task=course_task
+                                )
 
                         results['success'] += 1
 

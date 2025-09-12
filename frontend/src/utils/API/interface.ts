@@ -53,21 +53,26 @@ export interface ICourseTask {
 
 export interface IStudentCourse {
   id: number;
-  student: IStudent;
-  course: ICourseTeacher;
+  student_detail: IStudent;
+  course_detail: ICourseTeacher;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface IStudentCourseTask {
   id: number;
-  student: IStudent;
-  course_task: ICourseTask;
+  student: string;
+  student_detail: IStudent;
+  course: number;
+  course_detail: ICourseTeacher;
+  course_task: number;
+  course_task_detail: ICourseTask;
   task_file?: string;
   task_link?: string;
   assistive_tool_analysis?: any;
   prompt_analysis?: any;
   teacher_mark?: any;
+  is_analyzed: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -129,12 +134,12 @@ export interface Req_createAndUpdateCourseTask extends RequestParams {
 }
 
 export interface Req_createAndUpdateStudentCourse extends RequestParams {
-  student?: number;
+  student?: number | string;
   course?: number;
 }
 
 export interface Req_createAndUpdateStudentCourseTask extends RequestParams {
-  student?: number;
+  student?: number | string;
   course_task?: number;
   status?: string;
   submission?: any;
@@ -145,7 +150,6 @@ export interface Req_createAndUpdateStudentCourseTask extends RequestParams {
 export interface Req_submitMark extends RequestParams {
   teacher_mark: any;
 }
-
 //--------------------------------------------------------
 // API Response Extension
 // csrf cookie Response
@@ -153,6 +157,7 @@ export interface CSRF_cookies extends ResponseData {
   is_teacher: boolean
   name: string
   student_id: string
+  student_class_id: string
 }
 
 export interface Res_login extends ResponseData {
@@ -160,4 +165,5 @@ export interface Res_login extends ResponseData {
   is_teacher: boolean
   student_id: string
   status: number
+  student_class_id: string
 }

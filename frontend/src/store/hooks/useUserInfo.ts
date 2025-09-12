@@ -11,6 +11,7 @@ export const useUserInfo = () => {
     studentId: userInfoState.studentId,
     name: userInfoState.name,
     isTeacher: userInfoState.isTeacher,
+    studentClassId: userInfoState.studentClassId,
 
     setUserInfo: (userInfo: IUserInfoState) => dispatch(setUserInfo(userInfo)),
     clearUserInfo: () => dispatch(setUserEmpty()),

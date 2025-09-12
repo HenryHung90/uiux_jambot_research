@@ -65,7 +65,8 @@ class APIController {
       is_teacher: false,
       data: JSON,
       name: 'nobody',
-      student_id: ''
+      student_id: '',
+      student_class_id: ''
     }
     return resData
   }
@@ -114,7 +115,7 @@ export class API_GET extends APIController {
       }
     }).then((response: {
       status: number,
-      data: { is_teacher: any; name: string; student_id: string }
+      data: { is_teacher: any; name: string; student_id: string, student_class_id: string }
     }) => {
       const resData: CSRF_cookies = {
         message: "",
@@ -122,6 +123,7 @@ export class API_GET extends APIController {
         is_teacher: response.data.is_teacher,
         name: response.data.name || '',
         student_id: response.data.student_id || '',
+        student_class_id: response.data.student_class_id || '',
         data: JSON
       }
       return resData

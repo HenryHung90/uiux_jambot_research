@@ -59,6 +59,24 @@ class StudentCourseTask(models.Model):
         verbose_name="老師評語評分"
     )
 
+    ocr_content = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="OCR 處理後的文本內容"
+    )
+
+    keyword_analysis = models.JSONField(
+        default=dict,
+        blank=True,
+        null=True,
+        verbose_name="關鍵詞分析"
+    )
+
+    is_analyzed = models.BooleanField(
+        default=False,
+        verbose_name="是否已分析"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from backend.views.core import *
+from backend.views.sync_courses import sync_student_courses
 
 from backend.views.students import StudentViewSet
 from backend.views.student_classes import StudentClassViewSet
@@ -17,6 +18,10 @@ API_CORE = [
     path('user_info', userinfo_view, name='user_info'),
 ]
 
+API_ADMIN = [
+    path('sync-student-courses', sync_student_courses, name='sync_student_courses'),
+]
+
 router = DefaultRouter()
 router.register(r'students', StudentViewSet)
 router.register(r'student-classes', StudentClassViewSet)
@@ -27,5 +32,6 @@ router.register(r'student-course-tasks', StudentCourseTaskViewSet)
 
 urlpatterns = [
     *API_CORE,
+    *API_ADMIN,
     path('', include(router.urls)),
 ]

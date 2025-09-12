@@ -14,17 +14,17 @@ class StudentCourseTaskSerializer(serializers.ModelSerializer):
         model = StudentCourseTask
         fields = [
             'id',
-            'student',
             'student_detail',
-            'course',
             'course_detail',
-            'course_task',
             'course_task_detail',
             'task_file',
             'task_link',
             'assistive_tool_analysis',
             'prompt_analysis',
+            'keyword_analysis',
             'teacher_mark',
+            'ocr_content',
+            'is_analyzed',
             'created_at',
             'updated_at'
         ]

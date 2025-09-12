@@ -39,9 +39,9 @@ const AppContent = () => {
   // 檢查登入
   useEffect(() => {
     const fetchUserInfo = async () => {
-      const {student_id, name, is_teacher} = await AuthServices.getUserInfo()
+      const {student_id, name, is_teacher, student_class_id} = await AuthServices.getUserInfo()
       if (student_id) {
-        setUserInfo({studentId: student_id, name: name, isTeacher: is_teacher})
+        setUserInfo({studentId: student_id, name: name, isTeacher: is_teacher, studentClassId: student_class_id});
       }
     }
 
