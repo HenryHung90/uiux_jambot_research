@@ -121,6 +121,8 @@ WSGI_APPLICATION = "uiux_jambot_research.wsgi.application"
 # Determine whether the environment is production or development
 PROCESS_ON_PRODUCTION = os.getenv('PROCESS_ON_PRODUCTION', 'False').lower() == 'true'
 
+
+
 if PROCESS_ON_PRODUCTION:
     # 生產環境使用 PostgreSQL
     DATABASES = {
@@ -134,6 +136,9 @@ if PROCESS_ON_PRODUCTION:
         }
     }
 
+    ALLOWED_HOSTS = ["cj5418.synology.me", 'localhost']
+    X_FRAME_OPTIONS = 'SAMEORIGIN'
+
     # 生產環境 - 使用子路徑
     MIDDLEWARE_EXEMPT_PATHS = [
         '/api/login',
@@ -144,7 +149,7 @@ if PROCESS_ON_PRODUCTION:
         '/files/img/logo.PNG',
         '/vite.svg'
     ]
-    MIDDLEWARE_ADMIN_PREFIX = '/taskmind/api/admin/'
+    MIDDLEWARE_ADMIN_PREFIX = '/api/admin/'
 
     CORS_ALLOWED_ORIGINS = [
         "http://cj5418.synology.me:8080",
