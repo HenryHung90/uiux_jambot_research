@@ -1,25 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
+  Button,
   Card,
   CardBody,
-  Typography,
-  Button,
-  Dialog,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  Chip,
-  Tabs,
-  TabsHeader,
-  TabsBody,
-  Tab,
-  TabPanel
+  Typography
 } from "@material-tailwind/react";
 
-import { StudentCourseTaskService } from "../../../utils/services/studentCourseTaskService";
-import { StudentService } from "../../../utils/services/studentService";
-import {IStudentCourseTask} from "../../../utils/API/interface";
-
+import {StudentCourseTaskService} from "../../../utils/services/studentCourseTaskService";
+import {StudentService} from "../../../utils/services/studentService";
+import SubmissionComponent from "./UnitReview_Submission";
+import AnalyticComponent from "./UnitReview_Analytic";
 
 interface Material {
   name: string;
@@ -28,7 +18,7 @@ interface Material {
   task: any;
 }
 
-interface Assignment {
+interface CourseTask {
   name: string;
   contents?: any;
   task: any;
@@ -39,11 +29,10 @@ interface Unit {
   name: string;
   courseId: number;
   materials: Material[];
-  assignments: Assignment[];
+  assignments: CourseTask[];
 }
 
 interface Student {
-  id: number;
   name: string;
   student_id: string;
 }
@@ -63,46 +52,68 @@ interface UnitReviewProps {
 }
 
 const UnitReviewComponent = (props: UnitReviewProps) => {
-  const { units, currentClassId } = props;
+  const {units, currentClassId} = props;
 
   // 狀態管理
-  const [openSubmissionsDialog, setOpenSubmissionsDialog] = useState(false);
-  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [showSubmissions, setShowSubmissions] = useState(false);
+  const [showAnalytic, setShowAnalytic] = useState(false);
+  const [selectedCourseTask, setSelectedCourseTask] = useState<CourseTask | null>(null);
   const [studentSubmissions, setStudentSubmissions] = useState<StudentSubmission[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 處理查看作業提交狀況
-  const handleViewSubmissions = async (assignment: Assignment) => {
-    setSelectedAssignment(assignment);
+  const handleViewSubmissions = async (courseTask: CourseTask) => {
+    // 先設置當前選中的作業和加載狀態
+    setSelectedCourseTask(courseTask);
     setIsLoading(true);
 
+    // 獲取當前作業的ID
+    const courseTaskId = courseTask.task.id;
+    console.log('當前作業ID:', courseTaskId);
+
     try {
-      // 1. 獲取當前班級的所有學生
-      const studentsResponse = await StudentService.getStudentsByClass(currentClassId);
-      const students = studentsResponse;
+      const students = await StudentService.getStudentsByClass(currentClassId);
+      const submissions = await StudentCourseTaskService.getStudentCourseTasksByCourseTask(courseTaskId);
 
-      // 2. 獲取該作業的所有提交記錄
-      const submissionsResponse = await StudentCourseTaskService.getStudentCourseTasksByCourseTask(assignment.task.id);
-      const submissions = submissionsResponse;
-
-      // 3. 創建一個映射，用於快速查找學生的提交記錄
-      const submissionMap = new Map();
-      submissions.forEach(submission => {
-        submissionMap.set(submission.student.student_id, submission);
+      const validSubmissions = submissions.filter(submission => {
+        return submission.course_task_detail.id === courseTaskId;
       });
 
-      // 4. 為每個學生創建一個提交記錄對象，如果學生已提交，則使用已有的提交記錄
+
+      const submissionMap = {};
+      validSubmissions.forEach(submission => {
+        if (submission.student_detail && submission.student_detail.student_id) {
+          submissionMap[submission.student_detail.student_id] = submission;
+        }
+      });
+
+      // 整合學生和提交資料
       const allStudentSubmissions = students.map(student => {
-        const existingSubmission = submissionMap.get(student.student_id);
+        const existingSubmission = submissionMap[student.student_id];
+
+        // 如果學生有提交作業，則返回提交資料
         if (existingSubmission) {
-          return existingSubmission;
-        } else {
-          // 如果學生尚未提交，創建一個空的提交記錄
           return {
-            student: student,
-            course_task: assignment.task.id
+            id: existingSubmission.id,
+            student: {
+              name: student.name,
+              student_id: student.student_id
+            },
+            task_file: existingSubmission.task_file,
+            task_link: existingSubmission.task_link,
+            is_analyzed: existingSubmission.is_analyzed,
+            created_at: existingSubmission.created_at,
+            course_task: courseTaskId
           };
         }
+
+        // 如果學生沒有提交作業，則返回基本學生資料
+        return {
+          student: {
+            name: student.name,
+            student_id: student.student_id
+          },
+          course_task: courseTaskId
+        };
       });
 
       setStudentSubmissions(allStudentSubmissions);
@@ -110,35 +121,25 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
       console.error("獲取學生提交狀況失敗:", error);
     } finally {
       setIsLoading(false);
-      setOpenSubmissionsDialog(true);
+      setShowSubmissions(true);
     }
   };
 
-  // 格式化日期
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '尚未繳交';
-    const date = new Date(dateString);
-    return date.toLocaleString('zh-TW', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  // 關閉提交狀況卡片
+  const handleCloseSubmissions = () => {
+    setShowSubmissions(false);
   };
 
-  // 檢查學生是否有繳交作業
-  const hasSubmitted = (submission: StudentSubmission) => {
-    return submission.task_file || submission.task_link;
+  // 開啟 AI 辨識分析
+  const handleOpenAnalytic = (courseTask: CourseTask) => {
+    setShowAnalytic(true);
+    setSelectedCourseTask(courseTask);
   };
 
-  // 分類學生提交狀況
-  const getSubmittedStudents = () => {
-    return studentSubmissions.filter(submission => hasSubmitted(submission));
-  };
-
-  const getNotSubmittedStudents = () => {
-    return studentSubmissions.filter(submission => !hasSubmitted(submission));
+  // 關閉 AI 辨識分析
+  const handleCloseAnalytic = () => {
+    setShowAnalytic(false);
+    setSelectedCourseTask(null)
   };
 
   return (
@@ -148,7 +149,8 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
           units.map((unit, index) => (
             <Card key={index} className="shadow-md" placeholder={undefined}>
               <CardBody placeholder={undefined}>
-                <Typography variant="h5" className="mb-4 text-blue-700 border-b-2 border-blue-200 pb-2" placeholder={undefined}>
+                <Typography variant="h5" className="mb-4 text-blue-700 border-b-2 border-blue-200 pb-2"
+                            placeholder={undefined}>
                   {unit.name}
                 </Typography>
 
@@ -158,18 +160,29 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
                   </Typography>
                   {unit.assignments.length > 0 ? (
                     <div className="space-y-2">
-                      {unit.assignments.map((assignment, idx) => (
+                      {unit.assignments.map((courseTask, idx) => (
                         <div key={idx} className="flex items-center justify-between p-2 bg-orange-50 rounded">
-                          <span className="text-sm">{idx + 1}. {assignment.name}</span>
-                          <Button
-                            variant="text"
-                            size="sm"
-                            className="text-blue-500"
-                            onClick={() => handleViewSubmissions(assignment)}
-                            placeholder={undefined}
-                          >
-                            查看繳交狀況
-                          </Button>
+                          <span className="text-sm">{idx + 1}. {courseTask.name}</span>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="text"
+                              size="sm"
+                              className="text-blue-500"
+                              onClick={() => handleViewSubmissions(courseTask)}
+                              placeholder={undefined}
+                            >
+                              查看繳交狀況
+                            </Button>
+                            <Button
+                              variant="text"
+                              size="sm"
+                              className="text-purple-500"
+                              onClick={() => {handleOpenAnalytic(courseTask)}}
+                              placeholder={undefined}
+                            >
+                              單元 AI 分析
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -194,138 +207,20 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
         )}
       </div>
 
-      {/* 學生提交狀況對話框 */}
-      <Dialog
-        open={openSubmissionsDialog}
-        handler={() => setOpenSubmissionsDialog(!openSubmissionsDialog)}
-        placeholder={undefined}
-        size="lg"
-      >
-        <DialogHeader placeholder={undefined}>
-          {selectedAssignment ? `${selectedAssignment.name} - 學生繳交狀況` : '學生繳交狀況'}
-        </DialogHeader>
-        <DialogBody placeholder={undefined}>
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            </div>
-          ) : studentSubmissions.length > 0 ? (
-            <Tabs value="submitted">
-              <TabsHeader placeholder={undefined}>
-                <Tab value="submitted" className="py-2" placeholder={undefined}>
-                  <div className="flex items-center gap-2">
-                    <span>已繳交</span>
-                    <Chip
-                      value={getSubmittedStudents().length.toString()}
-                      size="sm"
-                      color="green"
-                      className="flex justify-center items-cente h-5 min-w-[20px]"
-                    />
-                  </div>
-                </Tab>
-                <Tab value="not_submitted" className="py-2" placeholder={undefined}>
-                  <div className="flex items-center gap-2">
-                    <span>未繳交</span>
-                    <Chip
-                      value={getNotSubmittedStudents().length.toString()}
-                      size="sm"
-                      color="red"
-                      className="flex justify-center items-center h-5 min-w-[20px]"
-                    />
-                  </div>
-                </Tab>
-              </TabsHeader>
-              <TabsBody placeholder={undefined}>
-                <TabPanel value="submitted">
-                  {getSubmittedStudents().length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full bg-white">
-                        <thead>
-                          <tr className="bg-gray-100 text-gray-700">
-                            <th className="py-2 px-4 text-left">學號</th>
-                            <th className="py-2 px-4 text-left">姓名</th>
-                            <th className="py-2 px-4 text-left">繳交方式</th>
-                            <th className="py-2 px-4 text-left">繳交時間</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {getSubmittedStudents().map((submission) => (
-                            <tr key={submission.student.id} className="border-b hover:bg-gray-50">
-                              <td className="py-2 px-4">{submission.student.student_id}</td>
-                              <td className="py-2 px-4">{submission.student.name}</td>
-                              <td className="py-2 px-4">
-                                <Chip
-                                  value={submission.task_file ? "檔案" : "連結"}
-                                  color="green"
-                                  size="sm"
-                                />
-                              </td>
-                              <td className="py-2 px-4">{formatDate(submission.created_at || '')}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <Typography variant="paragraph" className="text-center py-8" placeholder={undefined}>
-                      尚無學生繳交記錄
-                    </Typography>
-                  )}
-                </TabPanel>
-                <TabPanel value="not_submitted">
-                  {getNotSubmittedStudents().length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full bg-white">
-                        <thead>
-                          <tr className="bg-gray-100 text-gray-700">
-                            <th className="py-2 px-4 text-left">學號</th>
-                            <th className="py-2 px-4 text-left">姓名</th>
-                            <th className="py-2 px-4 text-left">狀態</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {getNotSubmittedStudents().map((submission) => (
-                            <tr key={submission.student.id} className="border-b hover:bg-gray-50">
-                              <td className="py-2 px-4">{submission.student.student_id}</td>
-                              <td className="py-2 px-4">{submission.student.name}</td>
-                              <td className="py-2 px-4 w-20">
-                                <Chip
-                                  value="未繳交"
-                                  color="red"
-                                  size="sm"
-                                />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <Typography variant="paragraph" className="text-center py-8" placeholder={undefined}>
-                      所有學生都已繳交
-                    </Typography>
-                  )}
-                </TabPanel>
-              </TabsBody>
-            </Tabs>
-          ) : (
-            <Typography variant="paragraph" className="text-center py-8" placeholder={undefined}>
-              尚無學生提交記錄
-            </Typography>
-          )}
-        </DialogBody>
-        <DialogFooter placeholder={undefined}>
-          <Button
-            variant="text"
-            color="red"
-            onClick={() => setOpenSubmissionsDialog(false)}
-            className="mr-1"
-            placeholder={undefined}
-          >
-            關閉
-          </Button>
-        </DialogFooter>
-      </Dialog>
+      <SubmissionComponent
+        open={showSubmissions}
+        onClose={handleCloseSubmissions}
+        assignmentName={selectedCourseTask?.name || ''}
+        studentSubmissions={studentSubmissions}
+        isLoading={isLoading}
+      />
+
+      <AnalyticComponent
+        open={showAnalytic}
+        onClose={handleCloseAnalytic}
+        studentSubmissions={studentSubmissions}
+        assignmentName={selectedCourseTask?.name || ''}
+      />
     </>
   );
 };

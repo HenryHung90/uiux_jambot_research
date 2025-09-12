@@ -35,9 +35,9 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoadingOpen(true);
-      const {student_id, name, is_teacher} = await AuthServices.login({student_id: studentId, password: password})
+      const {student_id, name, is_teacher, student_class_id} = await AuthServices.login({student_id: studentId, password: password})
       if (student_id) {
-        setUserInfo({studentId: student_id, name: name, isTeacher: is_teacher})
+        setUserInfo({studentId: student_id, name: name, isTeacher: is_teacher, studentClassId: student_class_id})
         NavLocation(is_teacher ? '/admin' : '/')
       }
     } catch (error) {

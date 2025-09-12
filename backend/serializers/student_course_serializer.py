@@ -12,9 +12,7 @@ class StudentCourseSerializer(serializers.ModelSerializer):
         model = StudentCourse
         fields = [
             'id',
-            'student',
             'student_detail',
-            'course',
             'course_detail',
             'created_at',
             'updated_at'

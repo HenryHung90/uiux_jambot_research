@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 
 // UI imports
 import {
@@ -7,6 +7,11 @@ import {
   Typography,
   Button,
   Chip, Collapse,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  Spinner
 } from "@material-tailwind/react";
 import {ChevronDownIcon, ChevronUpIcon, PlusIcon} from "@heroicons/react/24/outline";
 
@@ -18,17 +23,21 @@ import UnitReviewComponent from './components/UnitReview';
 // Store imports
 import {useUserInfo} from "../../store/hooks/useUserInfo";
 import {useStudentClass} from "../../store/hooks/useStudentClass";
+import {useAlertLoading} from "../../store/hooks/useAlertLoading";
 
 // Service imports
 import {AuthServices} from "../../utils/services/core";
 import {StudentClassService} from "../../utils/services/studentClassService";
+import {AdminService} from "../../utils/services/adminService";
 
 const AdminHome = () => {
   const [showSemesterList, setShowSemesterList] = React.useState<boolean>(true);
   const [showContentList, setShowContentList] = React.useState<boolean>(false);
+  const [showAdminTools, setShowAdminTools] = React.useState<boolean>(false);
   const [currentContent, setCurrentContent] = React.useState<'unit' | 'students' | 'review'>("unit");
 
   const {name} = useUserInfo();
+  const {setAlertLog, setLoadingOpen} = useAlertLoading();
   const {
     studentClasses,
     loading,
@@ -96,6 +105,33 @@ const AdminHome = () => {
       }
     } catch (error) {
       console.error("新增班級失敗:", error);
+    }
+  };
+
+  const handleSyncStudentCourses = async () => {
+    setLoadingOpen(true);
+    try {
+      const result = await AdminService.syncStudentCourses();
+
+      // 構建顯示訊息
+      const successTitle = "同步完成";
+      let detailsMessage = result.message || "學生課程同步已完成";
+
+      // 如果有數據，則添加到詳細信息中
+      if (result.data) {
+        const { total_students, created_student_courses, created_student_course_tasks } = result.data;
+        detailsMessage += `\n處理了 ${total_students} 名學生，創建了 ${created_student_courses} 個學生課程記錄，創建了 ${created_student_course_tasks} 個學生課程任務記錄`;
+      }
+
+      // 使用 AlertLog 顯示成功訊息
+      setAlertLog(successTitle, detailsMessage);
+    } catch (error) {
+      console.error("同步學生課程失敗:", error);
+
+      // 使用 AlertLog 顯示錯誤訊息
+      setAlertLog("同步失敗", "同步學生課程失敗，請稍後再試");
+    } finally {
+      setLoadingOpen(false);
     }
   };
 
@@ -218,6 +254,35 @@ const AdminHome = () => {
                       {option.name}
                     </Button>
                   ))}
+                </div>
+              </Collapse>
+
+              {/* 管理工具區域 */}
+              <Button
+                variant="text"
+                className="w-full flex items-center justify-between p-2 text-left mt-4"
+                onClick={() => setShowAdminTools(!showAdminTools)}
+                placeholder={undefined}
+              >
+                <Typography variant="h6" placeholder={undefined}>管理工具</Typography>
+                {showAdminTools ? (
+                  <ChevronUpIcon className="h-4 w-4"/>
+                ) : (
+                  <ChevronDownIcon className="h-4 w-4"/>
+                )}
+              </Button>
+              <Collapse open={showAdminTools} className="border-b pt-4">
+                <div className="space-y-2">
+                  <Button
+                    variant="filled"
+                    color="purple"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleSyncStudentCourses}
+                    placeholder={undefined}
+                  >
+                    同步學生課程
+                  </Button>
                 </div>
               </Collapse>
             </CardBody>

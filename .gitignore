@@ -9,6 +9,7 @@ static
 /request
 /files/course_contents
 /files/course_task_files
+/files/student_tasks
 
 db.sqlite3
 

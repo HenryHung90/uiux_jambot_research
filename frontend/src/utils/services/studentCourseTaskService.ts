@@ -1,4 +1,5 @@
 import {
+  API_analyzeStudentCourseTask,
   API_createStudentCourseTask,
   API_deleteStudentCourseTask,
   API_getAllStudentCourseTasks,
@@ -33,7 +34,7 @@ export class StudentCourseTaskService {
     return resData
   }
 
-  static async updateStudentCourseTask(taskId: string | number, reqData: Req_createAndUpdateStudentCourseTask) {
+  static async updateStudentCourseTask(taskId: string | number, reqData: FormData) {
     const response = await API_updateStudentCourseTask(taskId, reqData)
     const resData: IStudentCourseTask = response.data
     return resData
@@ -61,5 +62,10 @@ export class StudentCourseTaskService {
     const response = await API_submitMark(taskId, reqData)
     const resData: IStudentCourseTask = response.data
     return resData
+  }
+
+  static async analyzeStudentCourseTask(taskId: string | number) {
+    const response = await API_analyzeStudentCourseTask(taskId)
+    return response.data
   }
 }
