@@ -152,10 +152,12 @@ if PROCESS_ON_PRODUCTION:
     CORS_ALLOWED_ORIGINS = [
         "http://cj5418.synology.me:8080",
         "https://cj5418.synology.me:8080",
+        "http://localhost:8000",  # 新增允許從 localhost:8000 訪問
     ]
     CSRF_TRUSTED_ORIGINS = [
         "http://cj5418.synology.me:8080",
         "https://cj5418.synology.me:8080",
+        "http://localhost:8000",  # 新增允許從 localhost:8000 訪問
     ]
     CORS_ALLOW_CREDENTIALS = True
 else:
@@ -169,10 +171,13 @@ else:
 
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:5173",  # Vite 開發伺服器的預設位址
+        "http://localhost:8000",  # 新增允許從 localhost:8080 訪問
     ]
     CSRF_TRUSTED_ORIGINS = [
         "http://localhost:5173",  # Vite 開發伺服器的預設位址
+        "http://localhost:8000",  # 新增允許從 localhost:8080 訪問
     ]
+    ALLOWED_HOSTS = ['localhost']
     CORS_ALLOW_CREDENTIALS = True
     # 開發環境 - 直接路徑
     MIDDLEWARE_EXEMPT_PATHS = [
