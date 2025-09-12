@@ -7,6 +7,13 @@ from .student_class_serializer import StudentClassSerializer
 class CourseTaskSerializer(serializers.ModelSerializer):
     course_detail = CourseSerializer(source='course', read_only=True)
     student_class_detail = StudentClassSerializer(source='student_class', read_only=True)
+    content_file = serializers.SerializerMethodField()
+
+    def get_content_file(self, obj):
+        if obj.content_file:
+            # 只返回相對路徑，不包含域名和端口
+            return '/files/' + obj.content_file.name
+        return None
 
     class Meta:
         model = CourseTask

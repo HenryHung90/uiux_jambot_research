@@ -16,27 +16,7 @@ import UnitCard from "./SemesterUnits_UnitCard";
 
 import {CourseService} from "../../../utils/services/courseService";
 import {CourseTaskService} from "../../../utils/services/courseTaskService";
-
-interface Material {
-  name: string;
-  content_url?: string;
-  content_file?: string;
-  task: any;
-}
-
-interface Assignment {
-  name: string;
-  contents?: any;
-  task: any;
-}
-
-// 定義單元介面
-interface Unit {
-  name: string;
-  courseId: number;
-  materials: Material[];
-  assignments: Assignment[];
-}
+import {Material, Assignment, Unit} from "../../../store/hooks/useStudentClass";
 
 interface SemesterUnitsProps {
   units: Unit[];
@@ -70,6 +50,7 @@ const SemesterUnitsComponent = (props: SemesterUnitsProps) => {
 
   // 處理查看教材
   const handleViewMaterial = (material: Material) => {
+    alert(material.content_file)
     if (material.content_url) {
       window.open(material.content_url, '_blank');
       return;
@@ -200,24 +181,24 @@ const SemesterUnitsComponent = (props: SemesterUnitsProps) => {
     }
   };
 
-  const handleEditTask = (task: any) => {
+  const handleEditTask = (courseId: number, taskId: number, taskName: string, contentUrl: string, content: string) => {
     // 設置編輯狀態
-    setSelectedCourseId(task.course);
-    setNewTaskName(task.name);
-    setNewContentUrl(task.content_url || "");
-    setNewContent(task.contents ? task.contents.content || "" : "");
-    setUseUrl(!!task.content_url);
+    setSelectedCourseId(courseId);
+    setNewTaskName(taskName);
+    setNewContentUrl(contentUrl || "");
+    setNewContent(content ? content || "" : "");
+    setUseUrl(!!contentUrl);
     setSelectedFile(null);
     setIsEditMode(true);
-    setEditTaskId(task.id);
+    setEditTaskId(taskId);
     setOpenAddContentDialog(true);
   };
 
 // 處理刪除任務
-  const handleDeleteTask = async (task: any) => {
-    if (window.confirm(`確定要刪除 "${task.name}" 嗎？`)) {
+  const handleDeleteTask = async (taskName: string, taskId: number | string) => {
+    if (window.confirm(`確定要刪除 "${taskName}" 嗎？`)) {
       try {
-        await CourseTaskService.deleteCourseTask(task.id);
+        await CourseTaskService.deleteCourseTask(taskId);
         // 通知父組件數據已變更
         if (onDataChange) {
           onDataChange();

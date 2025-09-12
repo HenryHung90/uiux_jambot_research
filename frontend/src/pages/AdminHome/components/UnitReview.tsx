@@ -10,27 +10,7 @@ import {StudentCourseTaskService} from "../../../utils/services/studentCourseTas
 import {StudentService} from "../../../utils/services/studentService";
 import SubmissionComponent from "./UnitReview_Submission";
 import AnalyticComponent from "./UnitReview_Analytic";
-
-interface Material {
-  name: string;
-  content_url?: string;
-  content_file?: string;
-  task: any;
-}
-
-interface CourseTask {
-  name: string;
-  contents?: any;
-  task: any;
-}
-
-// 定義單元介面
-interface Unit {
-  name: string;
-  courseId: number;
-  materials: Material[];
-  assignments: CourseTask[];
-}
+import {Assignment as CourseTask, Unit} from "../../../store/hooks/useStudentClass";
 
 interface Student {
   name: string;
@@ -67,7 +47,7 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
     setIsLoading(true);
 
     // 獲取當前作業的ID
-    const courseTaskId = courseTask.task.id;
+    const courseTaskId = courseTask.taskId;
     console.log('當前作業ID:', courseTaskId);
 
     try {

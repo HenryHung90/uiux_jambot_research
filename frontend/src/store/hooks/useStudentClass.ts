@@ -3,20 +3,20 @@ import {RootState, AppDispatch} from '../index';
 import {fetchStudentClassesData, setCurrentClassId} from '../slices/studentClassSlice';
 import {useEffect} from 'react';
 
-interface Material {
+export interface Material {
   name: string;
+  taskId: number;
   content_url?: string;
   content_file?: string;
-  task: any;
 }
 
-interface Assignment {
+export interface Assignment {
   name: string;
+  taskId: number;
   contents?: any;
-  task: any;
 }
 
-interface Unit {
+export interface Unit {
   name: string;
   courseId: number;
   materials: Material[];
@@ -54,16 +54,17 @@ export const useStudentClass = () => {
       const assignments: Assignment[] = [];
 
       course.courseTasks.forEach(task => {
+        console.log(task)
         materials.push({
           name: task.name,
+          taskId: task.id,
           content_url: task.content_url || '',
-          content_file: task.content_file || '',
-          task: task
+          content_file: `${import.meta.env.VITE_APP_TEST_DNS}/${task.content_file}` || '',
         });
         assignments.push({
           name: task.name,
+          taskId: task.id,
           contents: task.contents || null,
-          task: task
         });
       });
 

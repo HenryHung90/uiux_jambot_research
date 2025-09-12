@@ -5,34 +5,15 @@ import {
   Typography,
   Button,
 } from "@material-tailwind/react";
-
-interface Material {
-  name: string;
-  content_url?: string;
-  content_file?: string;
-  task: any;
-}
-
-interface Assignment {
-  name: string;
-  contents?: any;
-  task: any;
-}
-
-interface Unit {
-  name: string;
-  courseId: number;
-  materials: Material[];
-  assignments: Assignment[];
-}
+import {Material, Assignment, Unit} from "../../../store/hooks/useStudentClass";
 
 interface UnitCardProps {
   unit: Unit;
   onViewMaterial: (material: Material) => void;
   onViewAssignment: (assignment: Assignment) => void;
   onAddContent: (courseId: number) => void;
-  onEditTask?: (task: any) => void;
-  onDeleteTask?: (task: any) => void;
+  onEditTask?: any;
+  onDeleteTask?: any;
 }
 
 const UnitCard: React.FC<UnitCardProps> = ({
@@ -125,7 +106,7 @@ const UnitCard: React.FC<UnitCardProps> = ({
                             <button
                               className="text-blue-500 hover:text-blue-700 p-1"
                               title="編輯"
-                              onClick={() => onEditTask(assignment.task)}
+                              onClick={() => onEditTask(unit.courseId, assignment.taskId, assignment.name, unit.materials[idx].content_url, assignment.contents)}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
                                    stroke="currentColor" className="w-4 h-4">
@@ -138,7 +119,7 @@ const UnitCard: React.FC<UnitCardProps> = ({
                             <button
                               className="text-red-500 hover:text-red-700 p-1"
                               title="刪除"
-                              onClick={() => onDeleteTask(assignment.task)}
+                              onClick={() => onDeleteTask(assignment.name, assignment.taskId)}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
                                    stroke="currentColor" className="w-4 h-4">
