@@ -143,9 +143,6 @@ if PROCESS_ON_PRODUCTION:
         '/',
         '/files/img/logo.PNG',
         '/vite.svg',
-        '/',
-        '/files/img/logo.PNG',
-        '/vite.svg'
     ]
     MIDDLEWARE_ADMIN_PREFIX = '/uiux_course/api/admin/'
     CORS_ALLOW_CREDENTIALS = True  # 允許攜帶憑證（Cookies）

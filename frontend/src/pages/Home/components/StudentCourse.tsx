@@ -43,7 +43,7 @@ const StudentCourseTaskComponent: React.FC<StudentCourseTaskProps> = ({
 
   useEffect(() => {
     if (task.task_file && !previewUrl) {
-      const absoluteUrl = import.meta.env.VITE_APP_API_ROUTE + task.task_file;
+      const absoluteUrl = import.meta.env.VITE_APP_BASENAME + task.task_file;
       setPreviewUrl(absoluteUrl);
     }
   }, [task.task_file]);

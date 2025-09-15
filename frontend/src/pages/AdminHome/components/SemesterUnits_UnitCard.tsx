@@ -106,7 +106,7 @@ const UnitCard: React.FC<UnitCardProps> = ({
                             <button
                               className="text-blue-500 hover:text-blue-700 p-1"
                               title="編輯"
-                              onClick={() => onEditTask(unit.courseId, assignment.taskId, assignment.name, unit.materials[idx].content_url, assignment.contents)}
+                              onClick={() => onEditTask(unit.courseId, assignment.taskId, assignment.name, unit.materials[idx].content_url, assignment.contents.content)}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
                                    stroke="currentColor" className="w-4 h-4">
