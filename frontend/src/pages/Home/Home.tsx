@@ -107,7 +107,6 @@ const Home = () => {
 
   const handleLogout = () => {
     AuthServices.logout()
-    navigate("/");
   };
 
   const handleChangePassword = () => {

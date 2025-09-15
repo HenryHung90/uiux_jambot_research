@@ -9,8 +9,9 @@ export class AuthServices {
   }
 
   static async logout() {
-    const response = await API_logout()
-    window.location.href = '/'
+    const response = await API_logout().then(()=>{
+      window.location.href = import.meta.env.VITE_APP_BASE_URL || "/"
+    })
   }
 
   static async getUserInfo() {

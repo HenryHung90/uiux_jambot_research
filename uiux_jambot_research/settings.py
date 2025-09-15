@@ -134,7 +134,7 @@ if PROCESS_ON_PRODUCTION:
         }
     }
 
-    ALLOWED_HOSTS = ["cj5418.synology.me", 'localhost']
+    ALLOWED_HOSTS = ["cj5418.synology.me", 'localhost', 'ccj.infocom.yzu.edu.tw']
     X_FRAME_OPTIONS = 'SAMEORIGIN'
 
     # 生產環境 - 使用子路徑
@@ -147,19 +147,17 @@ if PROCESS_ON_PRODUCTION:
         '/files/img/logo.PNG',
         '/vite.svg'
     ]
-    MIDDLEWARE_ADMIN_PREFIX = '/api/admin/'
-
+    MIDDLEWARE_ADMIN_PREFIX = '/uiux_course/api/admin/'
+    CORS_ALLOW_CREDENTIALS = True  # 允許攜帶憑證（Cookies）
+    CORS_ALLOW_ALL_ORIGINS = False  # 不建議設置為 True，改為允許特定來源
     CORS_ALLOWED_ORIGINS = [
-        "http://cj5418.synology.me:8080",
-        "https://cj5418.synology.me:8080",
-        "http://localhost:8000",  # 新增允許從 localhost:8000 訪問
+        "https://ccj.infocom.yzu.edu.tw",
+        "http://localhost:5418"
     ]
     CSRF_TRUSTED_ORIGINS = [
         "http://cj5418.synology.me:8080",
-        "https://cj5418.synology.me:8080",
-        "http://localhost:8000",  # 新增允許從 localhost:8000 訪問
+        "https://ccj.infocom.yzu.edu.tw",
     ]
-    CORS_ALLOW_CREDENTIALS = True
 else:
     # 開發環境使用 SQLite3
     DATABASES = {
@@ -231,9 +229,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, os.getenv('MEDIA_ROOT', 'files'))
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# 打印數據庫配置以便調試
-print(f"DATABASE CONFIG: {DATABASES['default']}")
-print(f"PROCESS_ON_PRODUCTION: {PROCESS_ON_PRODUCTION}")
-print(f"DB_USER: {os.getenv('DB_USER', 'not set')}")
-print(f"DB_HOST: {os.getenv('DB_HOST', 'not set')}")
