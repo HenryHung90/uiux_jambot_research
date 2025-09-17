@@ -77,7 +77,7 @@ class Command(BaseCommand):
 
                 is_pdf_exist = os.path.exists(pdf_path)
 
-                if is_pdf_exist:
+                if is_pdf_exist and not task1_2.content_file:
                     with open(pdf_path, 'rb') as f:
                         task1_2.content_file.save('test_PDF.pdf', File(f), save=True)
                     self.stdout.write(self.style.SUCCESS(f'成功上傳PDF文件到課程任務 task 1-2'))
@@ -115,7 +115,7 @@ class Command(BaseCommand):
                 else:
                     self.stdout.write(self.style.WARNING('課程任務 task 2-2 已存在'))
 
-                if is_pdf_exist:
+                if is_pdf_exist and not task2_1.content_file:
                     with open(pdf_path, 'rb') as f:
                         task2_2.content_file.save('test_PDF.pdf', File(f), save=True)
                     self.stdout.write(self.style.SUCCESS(f'成功上傳 PDF 文件到課程任務 task 2-2'))

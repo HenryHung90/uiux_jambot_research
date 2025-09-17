@@ -54,7 +54,7 @@ const SemesterUnitsComponent = (props: SemesterUnitsProps) => {
       window.open(material.content_url, '_blank');
       return;
     } else if (material.content_file) {
-      window.open(import.meta.env.VITE_APP_BASENAME + material.content_file, '_blank');
+      window.open(import.meta.env.VITE_APP_BASENAME + '/files/' + material.content_file.split("/files/")[1] , '_blank');
       return;
     } else {
       alert("此教材沒有可用的連結或檔案");

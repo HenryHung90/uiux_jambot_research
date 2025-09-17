@@ -7,9 +7,9 @@ from .student_class_serializer import StudentClassSerializer
 class CourseTaskSerializer(serializers.ModelSerializer):
     course_detail = CourseSerializer(source='course', read_only=True)
     student_class_detail = StudentClassSerializer(source='student_class', read_only=True)
-    content_file = serializers.SerializerMethodField()
+    content_file_url = serializers.SerializerMethodField()
 
-    def get_content_file(self, obj):
+    def get_content_file_url(self, obj):
         if obj.content_file:
             # 只返回相對路徑，不包含域名和端口
             return '/files/' + obj.content_file.name
@@ -27,6 +27,7 @@ class CourseTaskSerializer(serializers.ModelSerializer):
             'contents',
             'content_url',
             'content_file',
+            'content_file_url',
             'all_assistive_tool_analysis',
             'all_prompt_analysis',
             'created_at',

@@ -222,7 +222,7 @@ class StudentViewSet(viewsets.ModelViewSet):
                         student_data = {
                             'student_id': str(row['student_id']),
                             'name': row['name'],
-                            'password': row['password'],
+                            'password': str(row['password']),
                             'student_class': student_class,
                             'is_active': True  # 預設為啟用狀態
                         }
