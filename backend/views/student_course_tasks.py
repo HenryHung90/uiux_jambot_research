@@ -1,5 +1,6 @@
 from os import system
 
+import torch
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
@@ -22,6 +23,13 @@ from ..serializers.student_course_task_serializer import StudentCourseTaskSerial
 def extract_text(task):
     """使用 OCR 從作業文件中提取文本"""
     try:
+        if torch.backends.mps.is_available():
+            device = torch.device("mps")
+            print("MPS 設備可用，已設置為默認設備")
+        else:
+            device = torch.device("cpu")
+            print("MPS 設備不可用，使用 CPU 設備")
+
         if not task.task_file:
             return {
                 'success': False,
@@ -320,21 +328,21 @@ class StudentCourseTaskViewSet(viewsets.ModelViewSet):
         try:
             task = self.get_object()
 
-            # 檢查是否已經有分析結果
-            has_analysis = (
-                    task.keyword_analysis and
-                    task.assistive_tool_analysis and
-                    task.prompt_analysis
-            )
-
-            if has_analysis:
-                # 如果已經有分析結果，直接返回
-                return Response({
-                    'keyword_analysis': task.keyword_analysis,
-                    'assistive_tool_analysis': task.assistive_tool_analysis,
-                    'prompt_analysis': task.prompt_analysis,
-                    'is_analyzed': task.is_analyzed
-                })
+            # # 檢查是否已經有分析結果
+            # has_analysis = (
+            #         task.keyword_analysis and
+            #         task.assistive_tool_analysis and
+            #         task.prompt_analysis
+            # )
+            #
+            # if has_analysis:
+            #     # 如果已經有分析結果，直接返回
+            #     return Response({
+            #         'keyword_analysis': task.keyword_analysis,
+            #         'assistive_tool_analysis': task.assistive_tool_analysis,
+            #         'prompt_analysis': task.prompt_analysis,
+            #         'is_analyzed': task.is_analyzed
+            #     })
 
             # 如果沒有分析結果，進行分析
 

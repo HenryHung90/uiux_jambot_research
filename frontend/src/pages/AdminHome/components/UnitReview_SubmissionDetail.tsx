@@ -195,7 +195,7 @@ const SubmissionDetailComponent: React.FC<SubmissionDetailDialogProps> = ({
 
                   <div className="mt-1 flex items-center">
                     <a
-                      href={localSubmission.task_file}
+                      href={import.meta.env.VITE_APP_BASENAME + 'files/' + localSubmission.task_file.split('/files/')[1]}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-500 hover:underline flex items-center"
