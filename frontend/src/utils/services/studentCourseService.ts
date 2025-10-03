@@ -8,7 +8,13 @@ import {
   API_getStudentCourseTasks,
   API_updateStudentCourse
 } from "../API/API_studentCourse";
-import {IStudentCourse, IStudentCourseTask, Req_createAndUpdateStudentCourse} from "../API/interface";
+import {
+  IStudentCourse,
+  IStudentCourseTask,
+  Req_analyzeStudentCourseTask, Req_checkPatchStatus,
+  Req_createAndUpdateStudentCourse
+} from "../API/interface";
+import {API_checkPatchStatus, API_patchAnalyzeStudentCourseTask} from "../API/API_studentCourseTask";
 
 export class StudentCourseService {
   static async getAllStudentCourses() {
@@ -56,6 +62,18 @@ export class StudentCourseService {
   static async getStudentCourseTasks(studentCourseId: string | number) {
     const response = await API_getStudentCourseTasks(studentCourseId)
     const resData: Array<IStudentCourseTask> = response.data
+    return resData
+  }
+
+  static async patchAnalyzeStudentCourseTask(courseId: string | number) {
+    const response = await API_patchAnalyzeStudentCourseTask(courseId)
+    const resData: Req_analyzeStudentCourseTask = response.data
+    return resData
+  }
+
+  static async checkPatchAnalyzeStatus(patchId: string) {
+    const response = await API_checkPatchStatus(patchId)
+    const resData: Req_checkPatchStatus = response.data
     return resData
   }
 }

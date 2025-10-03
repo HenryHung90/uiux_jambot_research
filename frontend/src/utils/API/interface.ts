@@ -150,6 +150,18 @@ export interface Req_createAndUpdateStudentCourseTask extends RequestParams {
 export interface Req_submitMark extends RequestParams {
   teacher_mark: any;
 }
+
+export interface Req_analyzeStudentCourseTask extends RequestParams {
+  batch_task_id: string;
+  status: string;
+  message: string;
+}
+
+export interface Req_checkPatchStatus extends RequestParams {
+  task_id: string;
+  status: "SUCCESS" | "PROGRESS";
+}
+
 //--------------------------------------------------------
 // API Response Extension
 // csrf cookie Response

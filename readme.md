@@ -127,6 +127,164 @@ gunicorn uiux_jambot_research.wsgi:application --bind 0.0.0.0:5418
 - React 前端：http://localhost:5173/
 - Django 管理界面：http://localhost:5418/admin/
 
+## Celery 配置與使用說明
+
+### 簡介
+
+本專案使用 Celery 作為非同步任務佇列系統，主要用於處理耗時的分析任務，例如 OCR 文字識別、關鍵詞分析和 AI 輔助工具分析等。這些任務在後台執行，不會阻塞網站的主要功能。
+
+### 安裝需求
+
+要運行 Celery，您需要安裝以下套件：
+
+```bash
+pip install celery redis django-celery-results
+```
+
+同時，您需要一個訊息中介軟體，我們使用 Redis：
+
+```bash
+# MacOS
+brew install redis
+
+# Ubuntu
+sudo apt-get install redis-server
+```
+
+### 配置
+
+Celery 配置主要在 `uiux_jambot_research/celery.py` 文件中：
+
+```python
+import os
+from celery import Celery
+
+# 設定 Django 預設設定模組
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'uiux_jambot_research.settings')
+
+app = Celery('uiux_jambot_research')
+
+# 使用 Django 的設定檔案
+app.config_from_object('django.conf:settings', namespace='CELERY')
+
+# 自動從所有已註冊的 Django app 中加載 task
+app.autodiscover_tasks()
+
+@app.task(bind=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')
+```
+
+在 `settings.py` 中，您需要添加以下配置：
+
+```python
+# Celery settings
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # 使用 Redis 作為訊息中介
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # 儲存任務結果
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Taipei'  # 使用台灣時區
+```
+
+### 啟動 Celery
+
+要啟動 Celery worker，請執行以下命令：
+
+```bash
+# 在專案根目錄執行
+celery -A uiux_jambot_research worker --loglevel=info
+```
+
+在開發環境中，您可以啟用自動重載，當任務代碼變更時 worker 會自動重啟：
+
+```bash
+celery -A uiux_jambot_research worker --loglevel=info --autoreload
+```
+
+要查看 Celery 的詳細日誌，可以使用 `debug` 日誌級別：
+
+```bash
+celery -A uiux_jambot_research worker --loglevel=debug
+```
+
+### 監控 Celery 任務
+
+您可以使用 Flower 來監控 Celery 任務的執行狀況：
+
+```bash
+pip install flower
+celery -A uiux_jambot_research flower
+```
+
+然後在瀏覽器中訪問 http://localhost:5555 查看任務狀態。
+
+### 專案中的 Celery 任務
+
+本專案中定義了以下 Celery 任務：
+
+1. **analyze_single_task**: 分析單個學生作業，包括 OCR 文字提取、關鍵詞分析和輔助工具分析。
+
+   ```python
+   from backend.tasks import analyze_single_task
+   
+   # 非同步執行任務
+   result = analyze_single_task.delay(task_id)
+   ```
+
+2. **batch_analyze_tasks**: 批量分析指定課程任務的所有學生作業。
+
+   ```python
+   from backend.tasks import batch_analyze_tasks
+   
+   # 非同步執行任務
+   batch_task = batch_analyze_tasks.delay(course_task_id)
+   ```
+
+### 檢查任務狀態
+
+您可以通過 API 端點檢查任務狀態：
+
+```
+GET /api/student-course-tasks/check_task_status/?task_id=<task_id>
+```
+
+或使用 Python 代碼：
+
+```python
+from celery.result import AsyncResult
+
+result = AsyncResult(task_id)
+status = result.status  # 'PENDING', 'STARTED', 'SUCCESS', 'FAILURE'
+```
+
+### 常見問題排解
+
+1. **任務未開始執行**
+   - 確認 Redis 服務是否運行 (`redis-cli ping` 應返回 `PONG`)
+   - 確認 Celery worker 是否已啟動
+
+2. **任務執行失敗**
+   - 查看 Celery worker 日誌
+   - 使用 `check_task_status` API 端點查看具體錯誤信息
+
+3. **代碼變更後任務沒有更新**
+   - 重新啟動 Celery worker
+   - 或使用 `--autoreload` 選項啟動 worker
+
+4. **資源不足**
+   - 對於大量分析任務，可能需要增加 worker 數量：
+     ```bash
+     celery -A uiux_jambot_research worker --concurrency=4 --loglevel=info
+     ```
+
+### 重要注意事項
+
+- 每次修改 `tasks.py` 文件後，需要重新啟動 Celery worker（除非使用了 `--autoreload` 選項）
+- 確保 `OPENAI_API_KEY` 環境變量已正確設置，因為分析任務依賴於此
+- 在生產環境中，建議使用 Supervisor 或 systemd 來管理 Celery worker 的運行
+
+
 ## 使用 Docker 進行開發（可選）
 
 如果您偏好使用 Docker 進行開發：

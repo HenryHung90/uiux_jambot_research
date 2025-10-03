@@ -48,7 +48,6 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
 
     // 獲取當前作業的ID
     const courseTaskId = courseTask.taskId;
-    console.log('當前作業ID:', courseTaskId);
 
     try {
       const students = await StudentService.getStudentsByClass(currentClassId);
@@ -110,6 +109,12 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
     setShowSubmissions(false);
   };
 
+  // 從 AI 分析返回後重新打開提交狀況卡片
+  const handleReopenSubmissions = (courseTask: CourseTask) => {
+    setShowSubmissions(false);
+    handleViewSubmissions(courseTask);
+  }
+
   // 開啟 AI 辨識分析
   const handleOpenAnalytic = (courseTask: CourseTask) => {
     setShowAnalytic(true);
@@ -157,7 +162,9 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
                               variant="text"
                               size="sm"
                               className="text-purple-500"
-                              onClick={() => {handleOpenAnalytic(courseTask)}}
+                              onClick={() => {
+                                handleOpenAnalytic(courseTask)
+                              }}
                               placeholder={undefined}
                             >
                               單元 AI 分析
@@ -190,7 +197,9 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
       <SubmissionComponent
         open={showSubmissions}
         onClose={handleCloseSubmissions}
+        onEndOfAnalytic={() => handleReopenSubmissions(selectedCourseTask)}
         assignmentName={selectedCourseTask?.name || ''}
+        assignmentId={selectedCourseTask?.taskId || null}
         studentSubmissions={studentSubmissions}
         isLoading={isLoading}
       />

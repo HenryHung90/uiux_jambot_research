@@ -82,3 +82,22 @@ export const API_submitMark = (taskId: string | number, markData: Req_submitMark
 export const API_analyzeStudentCourseTask = (taskId: string | number) => {
   return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/analyze_task/`).sendRequest()
 }
+
+/**
+ * 批量分析學生課程內容
+ * @param taskId
+ * @returns Promise 返回分析結果，包含完成、失敗及正在處理的任務數量
+ */
+export const API_patchAnalyzeStudentCourseTask = (taskId: string | number) => {
+  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/patch_analyze_task/`).sendRequest()
+}
+
+
+/**
+ * 檢查任務處理狀態
+ * @param taskId Celery任務ID
+ * @returns Promise 返回任務的當前狀態和進度
+ */
+export const API_checkPatchStatus = (taskId: string) => {
+  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}check_task_status/?task_id=${taskId}`).sendRequest()
+}
