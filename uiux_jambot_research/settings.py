@@ -31,6 +31,16 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 
 AUTH_USER_MODEL = 'backend.Student'
 
+# Celery 設定
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Taipei'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 分鐘超時限制
+
 # Optionally, you can allow all headers and methods
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -77,6 +87,8 @@ INSTALLED_APPS = [
     # API
     'backend',
     'django_extensions',
+    # celery
+    'django_celery_results'
 ]
 
 MIDDLEWARE = [
@@ -118,8 +130,6 @@ WSGI_APPLICATION = "uiux_jambot_research.wsgi.application"
 
 # Determine whether the environment is production or development
 PROCESS_ON_PRODUCTION = os.getenv('PROCESS_ON_PRODUCTION', 'False').lower() == 'true'
-
-
 
 if PROCESS_ON_PRODUCTION:
     # 生產環境使用 PostgreSQL

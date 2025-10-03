@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, {useMemo, useState} from 'react';
 import {
   Button,
   Card,
@@ -14,6 +14,12 @@ import {
   Typography
 } from "@material-tailwind/react";
 import SubmissionDetailComponent from './UnitReview_SubmissionDetail';
+
+import {useAlertLoading} from "../../../store/hooks/useAlertLoading";
+
+import {StudentCourseService} from "../../../utils/services/studentCourseService";
+
+import {Assignment as CourseTask} from "../../../store/hooks/useStudentClass";
 
 interface Student {
   name: string;
@@ -33,21 +39,27 @@ interface StudentSubmission {
 interface SubmissionComponentProps {
   open: boolean;
   onClose: () => void;
+  onEndOfAnalytic: () => void;
   assignmentName: string;
+  assignmentId: number;
   studentSubmissions: StudentSubmission[];
   isLoading: boolean;
 }
 
 const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
-  open,
-  onClose,
-  assignmentName,
-  studentSubmissions,
-  isLoading
-}) => {
+                                                                   open,
+                                                                   onClose,
+                                                                   onEndOfAnalytic,
+                                                                   assignmentName,
+                                                                   assignmentId,
+                                                                   studentSubmissions,
+                                                                   isLoading
+                                                                 }) => {
   // 狀態管理 - 用於顯示學生提交內容的對話框
   const [showSubmissionDetail, setShowSubmissionDetail] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(null);
+
+  const {setAlertLog, setLoadingOpen} = useAlertLoading();
 
   // 格式化日期
   const formatDate = (dateString: string) => {
@@ -63,7 +75,7 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
   };
 
   // 使用 useMemo 預先計算已提交和未提交的學生列表
-  const { submittedStudents, notSubmittedStudents } = useMemo(() => {
+  const {submittedStudents, notSubmittedStudents} = useMemo(() => {
     const submitted: StudentSubmission[] = [];
     const notSubmitted: StudentSubmission[] = [];
 
@@ -92,6 +104,27 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
     setShowSubmissionDetail(false);
   };
 
+  const handleOneShotAnalyze = () => {
+    StudentCourseService.patchAnalyzeStudentCourseTask(assignmentId).then(res => {
+      setAlertLog(res.status, res.message + 'Work ID: ' + res.batch_task_id);
+      setLoadingOpen(true)
+
+      const checkStatusInterval = setInterval(() => {
+        if (res.batch_task_id) {
+          StudentCourseService.checkPatchAnalyzeStatus(res.batch_task_id).then(res => {
+            console.log(res.status)
+            if (res.status === 'SUCCESS') {
+              clearInterval(checkStatusInterval);
+              setLoadingOpen(false)
+              setAlertLog(res.status, '分析完成');
+              onEndOfAnalytic()
+            }
+          })
+        }
+      }, 1000)
+    })
+  }
+
 
   // 如果不是開啟狀態，不渲染任何內容
   if (!open) return null;
@@ -113,8 +146,9 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
                 className="p-2"
                 placeholder={undefined}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
+                     stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
               </Button>
             </div>
@@ -156,63 +190,65 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
                       <div className="overflow-x-auto">
                         <table className="min-w-full bg-white">
                           <thead>
-                            <tr className="bg-gray-100 text-gray-700">
-                              <th className="py-2 px-4 text-left">學號</th>
-                              <th className="py-2 px-4 text-left">姓名</th>
-                              <th className="py-2 px-4 text-center">繳交狀態</th>
-                              <th className="py-2 px-4 text-center">分析狀態</th>
-                              <th className="py-2 px-4 text-left">繳交時間</th>
-                              <th className="py-2 px-4 text-center">操作</th>
-                            </tr>
+                          <tr className="bg-gray-100 text-gray-700">
+                            <th className="py-2 px-4 text-left">學號</th>
+                            <th className="py-2 px-4 text-left">姓名</th>
+                            <th className="py-2 px-4 text-center">繳交狀態</th>
+                            <th className="py-2 px-4 text-center">分析狀態</th>
+                            <th className="py-2 px-4 text-left">繳交時間</th>
+                            <th className="py-2 px-4 text-center">操作</th>
+                          </tr>
                           </thead>
                           <tbody>
-                            {submittedStudents.map((submission) => (
-                              <tr key={submission.student.student_id} className="border-b hover:bg-gray-50 cursor-pointer" onClick={() => handleViewSubmissionDetail(submission)}>
-                                <td className="py-2 px-4">{submission.student.student_id}</td>
-                                <td className="py-2 px-4">{submission.student.name}</td>
-                                <td className="py-2 px-4 text-center">
-                                  {submission.task_file && submission.task_link ? (
-                                    <span className="text-green-500 font-bold">檔案+連結</span>
-                                  ) : submission.task_file ? (
-                                    <span className="text-green-500 font-bold">檔案</span>
-                                  ) : submission.task_link ? (
-                                    <span className="text-green-500 font-bold">連結</span>
-                                  ) : (
-                                    <span className="text-red-500 font-bold">無</span>
-                                  )}
-                                </td>
-                                <td className="py-2 px-4 text-center">
-                                  {submission.is_analyzed ? (
-                                    <Chip
-                                      value="已分析"
-                                      color="green"
-                                      size="sm"
-                                    />
-                                  ) : (
-                                    <Chip
-                                      value="未分析"
-                                      color="amber"
-                                      size="sm"
-                                    />
-                                  )}
-                                </td>
-                                <td className="py-2 px-4">{formatDate(submission.created_at || '')}</td>
-                                <td className="py-2 px-4 text-center">
-                                  <Button
+                          {submittedStudents.map((submission) => (
+                            <tr key={submission.student.student_id}
+                                className="border-b hover:bg-gray-50 cursor-pointer"
+                                onClick={() => handleViewSubmissionDetail(submission)}>
+                              <td className="py-2 px-4">{submission.student.student_id}</td>
+                              <td className="py-2 px-4">{submission.student.name}</td>
+                              <td className="py-2 px-4 text-center">
+                                {submission.task_file && submission.task_link ? (
+                                  <span className="text-green-500 font-bold">檔案+連結</span>
+                                ) : submission.task_file ? (
+                                  <span className="text-green-500 font-bold">檔案</span>
+                                ) : submission.task_link ? (
+                                  <span className="text-green-500 font-bold">連結</span>
+                                ) : (
+                                  <span className="text-red-500 font-bold">無</span>
+                                )}
+                              </td>
+                              <td className="py-2 px-4 text-center">
+                                {submission.is_analyzed ? (
+                                  <Chip
+                                    value="已分析"
+                                    color="green"
                                     size="sm"
-                                    variant="text"
-                                    color="blue"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleViewSubmissionDetail(submission);
-                                    }}
-                                    placeholder={undefined}
-                                  >
-                                    查看
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
+                                  />
+                                ) : (
+                                  <Chip
+                                    value="未分析"
+                                    color="amber"
+                                    size="sm"
+                                  />
+                                )}
+                              </td>
+                              <td className="py-2 px-4">{formatDate(submission.created_at || '')}</td>
+                              <td className="py-2 px-4 text-center">
+                                <Button
+                                  size="sm"
+                                  variant="text"
+                                  color="blue"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewSubmissionDetail(submission);
+                                  }}
+                                  placeholder={undefined}
+                                >
+                                  查看
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
                           </tbody>
                         </table>
                       </div>
@@ -227,26 +263,26 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
                       <div className="overflow-x-auto">
                         <table className="min-w-full bg-white">
                           <thead>
-                            <tr className="bg-gray-100 text-gray-700">
-                              <th className="py-2 px-4 text-left">學號</th>
-                              <th className="py-2 px-4 text-left">姓名</th>
-                              <th className="py-2 px-4 text-left">狀態</th>
-                            </tr>
+                          <tr className="bg-gray-100 text-gray-700">
+                            <th className="py-2 px-4 text-left">學號</th>
+                            <th className="py-2 px-4 text-left">姓名</th>
+                            <th className="py-2 px-4 text-left">狀態</th>
+                          </tr>
                           </thead>
                           <tbody>
-                            {notSubmittedStudents.map((submission) => (
-                              <tr key={submission.student.student_id} className="border-b hover:bg-gray-50">
-                                <td className="py-2 px-4">{submission.student.student_id}</td>
-                                <td className="py-2 px-4">{submission.student.name}</td>
-                                <td className="py-2 px-4 w-20">
-                                  <Chip
-                                    value="未繳交"
-                                    color="red"
-                                    size="sm"
-                                  />
-                                </td>
-                              </tr>
-                            ))}
+                          {notSubmittedStudents.map((submission) => (
+                            <tr key={submission.student.student_id} className="border-b hover:bg-gray-50">
+                              <td className="py-2 px-4">{submission.student.student_id}</td>
+                              <td className="py-2 px-4">{submission.student.name}</td>
+                              <td className="py-2 px-4 w-20">
+                                <Chip
+                                  value="未繳交"
+                                  color="red"
+                                  size="sm"
+                                />
+                              </td>
+                            </tr>
+                          ))}
                           </tbody>
                         </table>
                       </div>
@@ -266,6 +302,13 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
           </CardBody>
           <CardFooter className="flex justify-end p-4" placeholder={undefined}>
             <Button
+              variant="filled"
+              color="blue"
+              onClick={handleOneShotAnalyze}
+              placeholder={undefined}>
+              一鍵分析
+            </Button>
+            <Button
               variant="text"
               color="red"
               onClick={onClose}
@@ -279,7 +322,7 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
 
       <SubmissionDetailComponent
         open={showSubmissionDetail}
-        onClose={handleCloseSubmissionDetail}
+        onClose={onEndOfAnalytic}
         submission={selectedSubmission}
       />
     </>

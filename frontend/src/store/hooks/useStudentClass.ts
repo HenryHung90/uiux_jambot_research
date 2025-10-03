@@ -54,7 +54,6 @@ export const useStudentClass = () => {
       const assignments: Assignment[] = [];
 
       course.courseTasks.forEach(task => {
-        console.log(task)
         materials.push({
           name: task.name,
           taskId: task.id,
