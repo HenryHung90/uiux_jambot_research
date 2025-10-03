@@ -322,7 +322,7 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
 
       <SubmissionDetailComponent
         open={showSubmissionDetail}
-        onClose={onEndOfAnalytic}
+        onClose={onClose}
         submission={selectedSubmission}
       />
     </>

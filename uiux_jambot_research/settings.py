@@ -27,7 +27,7 @@ load_dotenv(dotenv_path='.env')
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-59tdvwhooe$y0b1x)7ge7#=$yekud!4@oyi&q^$cfoe+mu1^#_")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "True") == "True"
+DEBUG = os.getenv("DEBUG", "True").lower() == 'true'
 
 AUTH_USER_MODEL = 'backend.Student'
 
@@ -94,6 +94,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # coresheaders
     "django.middleware.security.SecurityMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -144,7 +145,10 @@ if PROCESS_ON_PRODUCTION:
         }
     }
 
-    ALLOWED_HOSTS = ["cj5418.synology.me", 'localhost', 'ccj.infocom.yzu.edu.tw']
+    ALLOWED_HOSTS = ['localhost', 'ccj.infocom.yzu.edu.tw']
+    CSRF_TRUSTED_ORIGINS = [
+        'https://ccj.infocom.yzu.edu.tw'
+    ]
     X_FRAME_OPTIONS = 'SAMEORIGIN'
 
     # 生產環境 - 使用子路徑
@@ -155,16 +159,12 @@ if PROCESS_ON_PRODUCTION:
         '/vite.svg',
     ]
     MIDDLEWARE_ADMIN_PREFIX = '/uiux_course/api/admin/'
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
     CORS_ALLOW_CREDENTIALS = True  # 允許攜帶憑證（Cookies）
     CORS_ALLOW_ALL_ORIGINS = False  # 不建議設置為 True，改為允許特定來源
-    CORS_ALLOWED_ORIGINS = [
-        "https://ccj.infocom.yzu.edu.tw",
-        "http://localhost:5418"
-    ]
-    CSRF_TRUSTED_ORIGINS = [
-        "http://cj5418.synology.me:8080",
-        "https://ccj.infocom.yzu.edu.tw",
-    ]
+    CSRF_COOKIE_HTTPONLY = False
+    SESSION_COOKIE_HTTPONLY = True
+
 else:
     # 開發環境使用 SQLite3
     DATABASES = {
@@ -231,7 +231,7 @@ STATIC_URL = os.getenv('STATIC_URL', '/static/')
 MEDIA_URL = os.getenv('MEDIA_URL', '/files/')
 STATIC_ROOT = os.path.join(BASE_DIR, os.getenv('STATIC_ROOT', 'static'))
 MEDIA_ROOT = os.path.join(BASE_DIR, os.getenv('MEDIA_ROOT', 'files'))
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

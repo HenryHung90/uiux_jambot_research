@@ -8,8 +8,6 @@ services:
              python manage.py makemigrations &&
              python manage.py migrate && 
              python manage.py create_default_admin_user &&
-             python manage.py create_test_students &&
-             python manage.py create_test_courses &&
              python manage.py runserver 0.0.0.0:8000"
     container_name: uiux-jambot-research
     volumes:
@@ -18,11 +16,7 @@ services:
     env_file:
       - .env
     environment:
-      DB_NAME: uiux_jambot
-      DB_USER: henry
-      DB_PASSWORD: henry_yzuic
       DB_HOST: uiux-psqldb
-      DB_PORT: 5432
       PROCESS_ON_PRODUCTION: True
     depends_on:
       - uiux-psqldb
@@ -32,10 +26,8 @@ services:
     container_name: uiux-jambot-db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=henry
-      - POSTGRES_PASSWORD=henry_yzuic
-      - POSTGRES_DB=uiux_jambot
+    env_file:
+      - .env
 
   uiux-nginx:
     image: nginx:latest
