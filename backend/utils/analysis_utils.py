@@ -32,7 +32,7 @@ def extract_text(task, is_from_celery=False):
 
         languages = ['ch_tra', 'en']
         try:
-            reader = easyocr.Reader(languages, gpu=not is_from_celery)
+            reader = easyocr.Reader(languages, gpu=False)
         except Exception as e:
             return {
                 'success': False,

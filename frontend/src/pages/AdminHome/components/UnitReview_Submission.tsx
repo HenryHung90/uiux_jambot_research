@@ -40,6 +40,7 @@ interface SubmissionComponentProps {
   open: boolean;
   onClose: () => void;
   onEndOfAnalytic: () => void;
+  courseId:number | null;
   assignmentName: string;
   assignmentId: number;
   studentSubmissions: StudentSubmission[];
@@ -50,6 +51,7 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
                                                                    open,
                                                                    onClose,
                                                                    onEndOfAnalytic,
+                                                                   courseId,
                                                                    assignmentName,
                                                                    assignmentId,
                                                                    studentSubmissions,
@@ -105,7 +107,7 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
   };
 
   const handleOneShotAnalyze = () => {
-    StudentCourseService.patchAnalyzeStudentCourseTask(assignmentId).then(res => {
+    StudentCourseService.patchAnalyzeStudentCourseTask(courseId, assignmentId).then(res => {
       setAlertLog(res.status, res.message + 'Work ID: ' + res.batch_task_id);
       setLoadingOpen(true)
 
@@ -322,7 +324,10 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
 
       <SubmissionDetailComponent
         open={showSubmissionDetail}
-        onClose={onClose}
+        onClose={()=> {
+            onClose()
+            handleCloseSubmissionDetail()
+        }}
         submission={selectedSubmission}
       />
     </>

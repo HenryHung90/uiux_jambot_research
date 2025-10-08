@@ -37,6 +37,7 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
     // 狀態管理
     const [showSubmissions, setShowSubmissions] = useState(false);
     const [showAnalytic, setShowAnalytic] = useState(false);
+    const [selectedCourseId, setSelectCourseId] = useState<number | null>(null);
     const [selectedCourseTask, setSelectedCourseTask] = useState<CourseTask | null>(null);
     const [studentSubmissions, setStudentSubmissions] = useState<StudentSubmission[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -153,6 +154,7 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
                                                             onClick={() => {
                                                                 handleViewSubmissions(courseTask)
                                                                 setShowSubmissions(true)
+                                                                setSelectCourseId(unit.courseId)
                                                             }}
                                                             placeholder={undefined}
                                                         >
@@ -198,6 +200,7 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
                 open={showSubmissions}
                 onClose={() => handleReopenSubmissions(selectedCourseTask, false)}
                 onEndOfAnalytic={() => handleReopenSubmissions(selectedCourseTask, true)}
+                courseId={selectedCourseId}
                 assignmentName={selectedCourseTask?.name || ''}
                 assignmentId={selectedCourseTask?.taskId || null}
                 studentSubmissions={studentSubmissions}

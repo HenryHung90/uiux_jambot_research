@@ -6,7 +6,7 @@ import {Req_submitMark, Req_createAndUpdateStudentCourseTask} from "./interface"
  * @returns Promise 返回學生課程任務列表
  */
 export const API_getAllStudentCourseTasks = () => {
-  return new API_GET(import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS).sendRequest()
+    return new API_GET(import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS).sendRequest()
 }
 
 /**
@@ -15,7 +15,7 @@ export const API_getAllStudentCourseTasks = () => {
  * @returns Promise 返回學生課程任務詳細信息
  */
 export const API_getStudentCourseTaskById = (taskId: string | number) => {
-  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/`).sendRequest()
+    return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/`).sendRequest()
 }
 
 /**
@@ -24,7 +24,7 @@ export const API_getStudentCourseTaskById = (taskId: string | number) => {
  * @returns Promise 返回創建結果
  */
 export const API_createStudentCourseTask = (taskData: Req_createAndUpdateStudentCourseTask) => {
-  return new API_POST(import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS, taskData).sendRequest()
+    return new API_POST(import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS, taskData).sendRequest()
 }
 
 /**
@@ -34,7 +34,7 @@ export const API_createStudentCourseTask = (taskData: Req_createAndUpdateStudent
  * @returns Promise 返回更新結果
  */
 export const API_updateStudentCourseTask = (taskId: string | number, taskData: FormData) => {
-  return new API_PUT(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/`, taskData).sendRequest()
+    return new API_PUT(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/`, taskData).sendRequest()
 }
 
 /**
@@ -43,7 +43,7 @@ export const API_updateStudentCourseTask = (taskId: string | number, taskData: F
  * @returns Promise 返回刪除結果
  */
 export const API_deleteStudentCourseTask = (taskId: string | number) => {
-  return new API_DELETE(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/`).sendRequest()
+    return new API_DELETE(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/`).sendRequest()
 }
 
 /**
@@ -52,7 +52,7 @@ export const API_deleteStudentCourseTask = (taskId: string | number) => {
  * @returns Promise 返回特定學生的課程任務列表
  */
 export const API_getStudentCourseTasksByStudent = (studentId: string | number) => {
-  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}?student=${studentId}`).sendRequest()
+    return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}?student=${studentId}`).sendRequest()
 }
 
 /**
@@ -61,7 +61,7 @@ export const API_getStudentCourseTasksByStudent = (studentId: string | number) =
  * @returns Promise 返回特定課程任務的學生提交列表
  */
 export const API_getStudentCourseTasksByCourseTask = (courseTaskId: string | number) => {
-  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}?course_task=${courseTaskId}`).sendRequest()
+    return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}?course_task=${courseTaskId}`).sendRequest()
 }
 
 /**
@@ -71,7 +71,7 @@ export const API_getStudentCourseTasksByCourseTask = (courseTaskId: string | num
  * @returns Promise 返回評分結果
  */
 export const API_submitMark = (taskId: string | number, markData: Req_submitMark) => {
-  return new API_POST(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/submit_mark/`, markData).sendRequest()
+    return new API_POST(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/submit_mark/`, markData).sendRequest()
 }
 
 /**
@@ -80,16 +80,17 @@ export const API_submitMark = (taskId: string | number, markData: Req_submitMark
  * @returns Promise 返回分析結果，包括OCR、關鍵詞、輔助工具與提示詞分析
  */
 export const API_analyzeStudentCourseTask = (taskId: string | number) => {
-  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/analyze_task/`).sendRequest()
+    return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/analyze_task/`).sendRequest()
 }
 
 /**
  * 批量分析學生課程內容
- * @param taskId
  * @returns Promise 返回分析結果，包含完成、失敗及正在處理的任務數量
+ * @param courseId
+ * @param courseTaskId
  */
-export const API_patchAnalyzeStudentCourseTask = (taskId: string | number) => {
-  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${taskId}/patch_analyze_task/`).sendRequest()
+export const API_patchAnalyzeStudentCourseTask = (courseId: string | number, courseTaskId: string | number) => {
+    return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}${courseTaskId}/patch_analyze_task/?course_id=${courseId}`).sendRequest()
 }
 
 
@@ -99,5 +100,5 @@ export const API_patchAnalyzeStudentCourseTask = (taskId: string | number) => {
  * @returns Promise 返回任務的當前狀態和進度
  */
 export const API_checkPatchStatus = (taskId: string) => {
-  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}check_task_status/?task_id=${taskId}`).sendRequest()
+    return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSE_TASKS}check_task_status/?task_id=${taskId}`).sendRequest()
 }

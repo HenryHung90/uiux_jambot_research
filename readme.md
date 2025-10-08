@@ -193,7 +193,7 @@ CELERY_TIMEZONE = 'Asia/Taipei'  # 使用台灣時區
 
 ```bash
 # 在專案根目錄執行
-celery -A uiux_jambot_research worker --loglevel=info
+celery -A uiux_jambot_research worker --concurrency=2 --loglevel=info
 ```
 
 在開發環境中，您可以啟用自動重載，當任務代碼變更時 worker 會自動重啟：

@@ -120,10 +120,11 @@ class StudentCourseTaskViewSet(viewsets.ModelViewSet):
         try:
             # 獲取當前的學生課程任務
             task = self.get_object()
+            course_id = request.query_params.get('course_id')
             course_task_id = task.course_task.id
 
             # 啟動批量處理 Celery 任務
-            batch_task = batch_analyze_tasks.delay(course_task_id)
+            batch_task = batch_analyze_tasks.delay(course_id, course_task_id)
 
             # 返回任務 ID 和狀態
             return Response({

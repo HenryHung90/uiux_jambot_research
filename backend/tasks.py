@@ -66,15 +66,16 @@ def analyze_single_task(self, task_id):
 
 
 @shared_task(bind=True)
-def batch_analyze_tasks(self, course_task_id):
+def batch_analyze_tasks(self, course_id, course_task_id):
     """
     批量分析指定課程任務的所有學生作業
     """
     try:
-        logger.info(f"開始批量分析課程任務 ID: {course_task_id} 的所有學生作業")
+        logger.info(f"開始批量分析課程 ID:{course_id} 的所有學生作業")
 
         # 獲取該課程任務的所有學生作業
-        student_tasks = StudentCourseTask.objects.filter(course_task=course_task_id, is_analyzed=False, task_file__isnull=False)
+        student_tasks = StudentCourseTask.objects.filter(course_id=course_id, is_analyzed=False,
+                                                         task_file__isnull=False)
         print(student_tasks)
 
         if not student_tasks.exists():

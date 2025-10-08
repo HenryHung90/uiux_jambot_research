@@ -7,7 +7,7 @@ COPY frontend ./
 RUN npm run build
 
 # 第二階段：建構後端 (backend)
-FROM python:3.11-slim
+FROM --platform=linux/arm64 python:3.11-slim
 
 # 安裝系統依賴（包括 poppler-utils 和其他工具）
 RUN apt-get update && apt-get install -y \
@@ -34,5 +34,19 @@ ENV DJANGO_SETTINGS_MODULE=uiux_jambot_research.settings
 # 清理不必要的文件（示例：node_modules）
 RUN rm -rf /app/frontend/node_modules
 
-# 運行 Django 應用程式的指令
-CMD ["sh", "-c", "gunicorn uiux_jambot_research.wsgi:application --bind 0.0.0.0:8000"]
+# 創建啟動腳本
+RUN echo '#!/bin/bash\n\
+# 啟動 Celery worker 在背景執行\n\
+celery -A uiux_jambot_research worker --loglevel=info > /var/log/celery.log 2>&1 &\n\
+\n\
+# 啟動 Django 應用\n\
+gunicorn uiux_jambot_research.wsgi:application --bind 0.0.0.0:8000\n\
+' > /app/start.sh
+
+RUN chmod +x /app/start.sh
+
+# 創建日誌目錄
+RUN mkdir -p /var/log/
+
+# 運行啟動腳本
+CMD ["/app/start.sh"]
