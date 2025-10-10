@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Typography} from "@material-tailwind/react";
 import {Bar, Doughnut} from 'react-chartjs-2';
 import {
@@ -53,7 +53,10 @@ const AnalysisResultDisplay = (props: AnalysisResultDisplayProps) => {
 
   // 將關鍵詞數據轉換為圖表格式
   const keywordChartData = React.useMemo(() => {
-    if (!hasKeywordData) return { labels: [], datasets: [{ label: '文字使用次數', data: [], backgroundColor: 'rgba(75, 192, 192, 0.6)' }] };
+    if (!hasKeywordData) return {
+      labels: [],
+      datasets: [{label: '文字使用次數', data: [], backgroundColor: 'rgba(75, 192, 192, 0.6)'}]
+    };
 
     // 獲取前 10 個關鍵詞
     const entries = Object.entries(keywordAnalysis.top_keywords).slice(0, 10);
@@ -166,7 +169,7 @@ const AnalysisResultDisplay = (props: AnalysisResultDisplayProps) => {
     if (!hasPromptData) {
       return {
         labels: [],
-        datasets: [{ label: 'Prompt 常用字詞', data: [], backgroundColor: 'rgba(153, 102, 255, 0.6)' }]
+        datasets: [{label: 'Prompt 常用字詞', data: [], backgroundColor: 'rgba(153, 102, 255, 0.6)'}]
       };
     }
 

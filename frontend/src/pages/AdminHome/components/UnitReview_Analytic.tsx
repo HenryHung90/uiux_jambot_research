@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Button,
   Card,
@@ -6,6 +6,12 @@ import {
   Typography,
   Alert
 } from "@material-tailwind/react";
+import {Assignment as CourseTask} from "../../../store/hooks/useStudentClass";
+import {StudentCourseService} from "../../../utils/services/studentCourseService";
+import {CourseTaskService} from "../../../utils/services/courseTaskService";
+import AnalysisResultDisplay from "../../../components/AnalyticDetail/AnalysisResultDisplay";
+import {StudentCourseTaskService} from "../../../utils/services/studentCourseTaskService";
+import * as XLSX from "xlsx";
 
 interface Student {
   name: string;
@@ -24,53 +30,115 @@ interface StudentSubmission {
 interface AnalysticComponentProps {
   open: boolean;
   onClose: () => void;
-  studentSubmissions: StudentSubmission[];
+  courseTask: CourseTask | null;
   assignmentName: string;
 }
 
 const AnalysticComponent: React.FC<AnalysticComponentProps> = ({
-  open,
-  onClose,
-  studentSubmissions,
-  assignmentName
-}) => {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
+                                                                 open,
+                                                                 onClose,
+                                                                 courseTask,
+                                                                 assignmentName
+                                                               }) => {
+  const [allAssistiveToolAnalysis, setAllAssistiveToolAnalysis] = useState<any>([]);
+  const [allKeywordAnalysis, setAllKeywordAnalysis] = useState<any>([]);
+  const [allPromptAnalysis, setAllPromptAnalysis] = useState<any>([]);
 
-  const handleStartAnalysis = () => {
-    setIsAnalyzing(true);
+  const fetchAnalysisData = async (reanalysis: boolean = false) => {
+    await CourseTaskService.getCourseTaskById(courseTask.taskId).then(fetchAnalysisData => {
+      if (fetchAnalysisData.all_prompt_analysis === null || reanalysis) {
+        StudentCourseService.analyzeAllStudentCourseTasks(courseTask.taskId).then(resultData => {
+          setAllKeywordAnalysis({'top_keywords': resultData.all_keyword_analysis})
+          setAllPromptAnalysis({'prompts': resultData.all_prompt_analysis})
+          setAllAssistiveToolAnalysis(resultData.all_assistive_tool_analysis)
+        });
+      } else {
+        console.log(fetchAnalysisData)
+        setAllKeywordAnalysis({'top_keywords': fetchAnalysisData.all_keyword_analysis})
+        setAllPromptAnalysis({'prompts': fetchAnalysisData.all_prompt_analysis})
+        setAllAssistiveToolAnalysis(fetchAnalysisData.all_assistive_tool_analysis)
+      }
+    })
+  }
 
-    // 檢查是否有提交的檔案
-    const hasTaskFiles = studentSubmissions.some(submission => submission.task_file);
+  function convertToXlsxFile(sheetName: string, workbookNames: Array<string>, data: Array<Array<JSON>>) {
+    // 創建工作簿並添加工作表
+    const workbook = XLSX.utils.book_new();
+    const sheetNameWithFileType = sheetName + '.xlsx'
 
-    if (!hasTaskFiles) {
-      setAlertMessage("無法進行 AI 辨識，沒有學生提交檔案！");
-      setShowAlert(true);
-      setIsAnalyzing(false);
-      return;
+    for (let i = 0; i < workbookNames.length; i++) {
+      // Convert each dataset to a worksheet
+      const worksheet = XLSX.utils.json_to_sheet(data[i]);
+      // Append the worksheet to the workbook with the corresponding name
+      XLSX.utils.book_append_sheet(workbook, worksheet, workbookNames[i]);
     }
 
-    // 這裡可以添加實際的 AI 辨識邏輯
-    console.log("開始 AI 辨識", studentSubmissions);
 
-    // 模擬分析過程
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      // 這裡可以處理分析結果
-    }, 2000);
-  };
+    // 將工作簿轉換為二進制數據
+    const workbookBinary = XLSX.write(workbook, {bookType: 'xlsx', type: 'array'});
 
+    // 創建 Blob 對象
+    const blob = new Blob([workbookBinary], {type: 'application/octet-stream'});
+
+    // 創建下載鏈接並觸發下載
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = sheetNameWithFileType;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+
+  const handleDownloadData = () => {
+    const fileName = `${assignmentName}_分析報告`;
+    const workbookNames = ["工具使用分析", "關鍵詞分析", "提示詞分析"];
+    let assistiveToolData = [];
+    if (allAssistiveToolAnalysis && typeof allAssistiveToolAnalysis === 'object') {
+      assistiveToolData = Object.entries(allAssistiveToolAnalysis).map(([tool, count]) => ({
+        "工具名稱": tool,
+        "使用次數": count
+      }));
+    }
+    let keywordData = [];
+    if (allKeywordAnalysis && typeof allKeywordAnalysis.top_keywords === 'object') {
+      // 檢查是否已經是數組格式
+      if (Array.isArray(allKeywordAnalysis.top_keywords)) {
+        keywordData = allKeywordAnalysis.top_keywords;
+      } else {
+        // 將對象轉換為數組格式
+        keywordData = Object.entries(allKeywordAnalysis.top_keywords).map(([keyword, count]) => ({
+          "關鍵詞": keyword,
+          "出現次數": count
+        }));
+      }
+    }
+
+    let promptData = [];
+    if (allPromptAnalysis && Array.isArray(allPromptAnalysis.prompts)) {
+      promptData = allPromptAnalysis.prompts.map(item => ({
+        "提示詞": item.keyword,
+        "出現次數": item.times
+      }));
+    }
+
+    convertToXlsxFile(fileName, workbookNames, [assistiveToolData, keywordData, promptData]);
+  }
+
+  useEffect(() => {
+    if (open) fetchAnalysisData(false)
+  }, [open]);
   // 如果不是開啟狀態，不渲染任何內容
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-auto">
-      <Card className="w-full max-w-2xl mx-4 shadow-xl" placeholder={undefined}>
+      <Card className="w-full min-w-xl max-h-[90%] mx-4 shadow-xl overflow-auto" placeholder={undefined}>
         <CardBody placeholder={undefined}>
           <div className="flex justify-between items-center mb-4">
             <Typography variant="h5" placeholder={undefined}>
-              AI 辨識分析 - {assignmentName}
+              單元分析 - {assignmentName}
             </Typography>
             <Button
               variant="text"
@@ -79,45 +147,36 @@ const AnalysticComponent: React.FC<AnalysticComponentProps> = ({
               className="p-2"
               placeholder={undefined}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
+                   stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </Button>
           </div>
-
-          {showAlert && (
-            <Alert
-              color="red"
-              className="mb-4"
-              onClose={() => setShowAlert(false)}
-            >
-              {alertMessage}
-            </Alert>
-          )}
-
-          <div className="text-center py-8">
+          <div className="flex mb-4 gap-x-2">
             <Button
-              onClick={handleStartAnalysis}
+              variant="gradient"
               color="blue"
-              className="flex items-center justify-center mx-auto"
-              disabled={isAnalyzing}
+              onClick={() => fetchAnalysisData(true)}
               placeholder={undefined}
             >
-              {isAnalyzing ? (
-                <>
-                  <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                  辨識中...
-                </>
-              ) : (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                  開始 AI 辨識
-                </>
-              )}
+              重新分析
+            </Button>
+            <Button
+              variant="gradient"
+              color="blue"
+              onClick={handleDownloadData}
+              placeholder={undefined}
+            >
+              下載數據
             </Button>
           </div>
+
+          <AnalysisResultDisplay
+            assistiveToolAnalysis={allAssistiveToolAnalysis}
+            keywordAnalysis={allKeywordAnalysis}
+            promptAnalysis={allPromptAnalysis}
+          />
         </CardBody>
       </Card>
     </div>

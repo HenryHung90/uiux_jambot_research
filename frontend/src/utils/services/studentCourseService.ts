@@ -1,4 +1,5 @@
 import {
+    API_analyzeAllStudentCourseTasksByCourse,
     API_createStudentCourse,
     API_deleteStudentCourse,
     API_getAllStudentCourses,
@@ -75,5 +76,12 @@ export class StudentCourseService {
         const response = await API_checkPatchStatus(patchId)
         const resData: Req_checkPatchStatus = response.data
         return resData
+    }
+
+    static async analyzeAllStudentCourseTasks(studentCourseId: string | number) {
+        const response = await API_analyzeAllStudentCourseTasksByCourse(studentCourseId)
+        // const resData: Req_analyzeStudentCourseTask = response.data
+        // return resData
+        return response.data
     }
 }

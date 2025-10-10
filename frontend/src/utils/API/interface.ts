@@ -47,6 +47,7 @@ export interface ICourseTask {
   content_url?: string;
   all_assistive_tool_analysis: any
   all_prompt_analysis: any
+  all_keyword_analysis: any
   created_at?: string;
   updated_at?: string;
 }

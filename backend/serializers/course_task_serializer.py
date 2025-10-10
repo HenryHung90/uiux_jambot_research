@@ -30,6 +30,7 @@ class CourseTaskSerializer(serializers.ModelSerializer):
             'content_file_url',
             'all_assistive_tool_analysis',
             'all_prompt_analysis',
+            'all_keyword_analysis',
             'created_at',
             'updated_at'
         ]

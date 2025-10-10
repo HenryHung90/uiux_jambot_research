@@ -47,6 +47,12 @@ class CourseTask(models.Model):
         verbose_name="作業內所有提示分析"
     )
 
+    all_keyword_analysis = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="作業內所有關鍵字分析"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

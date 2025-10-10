@@ -4,8 +4,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import IntegrityError
 from celery.result import AsyncResult
+import json
 
-
+from ..models.course_tasks import CourseTask  # 引入 CourseTask 模型
 from ..models.student_course_tasks import StudentCourseTask
 from ..serializers.student_course_task_serializer import StudentCourseTaskSerializer
 from ..tasks import batch_analyze_tasks
@@ -173,3 +174,84 @@ class StudentCourseTaskViewSet(viewsets.ModelViewSet):
                     response_data['status'] = 'SUCCESS'
 
         return Response(response_data)
+
+    @action(detail=False, methods=['get'])
+    def analyze_all_student_course_tasks(self, request):
+        """根據 courseTaskId 獲取所有相關的學生課程任務"""
+        course_task_id = request.query_params.get('courseTaskId')
+
+        course_task = CourseTask.objects.get(id=course_task_id)
+        student_course_tasks = StudentCourseTask.objects.filter(
+            course_task_id=course_task_id
+        )
+
+        if not student_course_tasks.exists():
+            return Response(
+                {'detail': f'沒有找到與課程任務ID {course_task_id} 相關的學生課程任務'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        all_assistive_tool_analysis = {}
+        all_prompt_analysis = {}
+        all_keyword_analysis = {}
+
+        for task in student_course_tasks:
+            # 處理輔助工具分析數據
+            if task.assistive_tool_analysis:
+                try:
+                    assistive_data = task.assistive_tool_analysis
+                    for tool, value in assistive_data.items():
+                        if tool in all_assistive_tool_analysis:
+                            all_assistive_tool_analysis[tool] += value
+                        else:
+                            all_assistive_tool_analysis[tool] = value
+                except Exception as e:
+                    print(f"處理輔助工具分析數據時出錯: {str(e)}")
+
+            # 處理提示詞分析數據
+            if task.prompt_analysis:
+                try:
+                    prompt_data = task.prompt_analysis
+                    if 'prompts' in prompt_data:
+                        for prompt_item in prompt_data['prompts']:
+                            keyword = prompt_item.get('keyword')
+                            times = prompt_item.get('times', 0)
+
+                            if keyword in all_prompt_analysis:
+                                all_prompt_analysis[keyword] += times
+                            else:
+                                all_prompt_analysis[keyword] = times
+                except Exception as e:
+                    print(f"處理提示詞分析數據時出錯: {str(e)}")
+
+            # 處理關鍵詞分析數據
+            if task.keyword_analysis:
+                try:
+                    keyword_data = task.keyword_analysis
+                    if 'top_keywords' in keyword_data:
+                        top_keywords = keyword_data['top_keywords']
+                        for keyword, count in top_keywords.items():
+                            if keyword in all_keyword_analysis:
+                                all_keyword_analysis[keyword] += count
+                            else:
+                                all_keyword_analysis[keyword] = count
+                except Exception as e:
+                    print(f"處理關鍵詞分析數據時出錯: {str(e)}")
+
+        formatted_prompt_analysis = [{"keyword": keyword, "times": times} for keyword, times in all_prompt_analysis.items()]
+
+
+        # 更新課程任務的匯總分析數據
+        course_task.all_assistive_tool_analysis = all_assistive_tool_analysis
+        course_task.all_prompt_analysis = formatted_prompt_analysis
+        course_task.all_keyword_analysis = all_keyword_analysis
+        course_task.save()
+
+        return Response({
+            "message": "課程任務分析數據匯總成功",
+            "course_task_id": course_task_id,
+            "student_tasks_count": student_course_tasks.count(),
+            "all_assistive_tool_analysis": all_assistive_tool_analysis,
+            "all_prompt_analysis": [all_prompt_analysis],
+            "all_keyword_analysis": all_keyword_analysis
+        })
