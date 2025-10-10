@@ -68,4 +68,15 @@ export class StudentCourseTaskService {
     const response = await API_analyzeStudentCourseTask(taskId)
     return response.data
   }
+
+  static async clearAnalysisResults(courseTaskId: string | number) {
+    const emptyFormData = new FormData();
+    emptyFormData.append('assistive_tool_analysis', '{}');
+    emptyFormData.append('keyword_analysis', '{}');
+    emptyFormData.append('prompt_analysis', '{}');
+    emptyFormData.append('is_analyzed', 'false');
+    emptyFormData.append('ocr_content', '');
+    const response = await API_updateStudentCourseTask(courseTaskId, emptyFormData)
+    return response.data
+  }
 }

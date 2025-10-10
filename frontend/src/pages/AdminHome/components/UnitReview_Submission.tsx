@@ -40,7 +40,7 @@ interface SubmissionComponentProps {
   open: boolean;
   onClose: () => void;
   onEndOfAnalytic: () => void;
-  courseId:number | null;
+  courseId: number | null;
   assignmentName: string;
   assignmentId: number;
   studentSubmissions: StudentSubmission[];
@@ -324,9 +324,9 @@ const SubmissionComponent: React.FC<SubmissionComponentProps> = ({
 
       <SubmissionDetailComponent
         open={showSubmissionDetail}
-        onClose={()=> {
-            onClose()
-            handleCloseSubmissionDetail()
+        onClose={() => {
+          handleCloseSubmissionDetail();
+          onEndOfAnalytic()
         }}
         submission={selectedSubmission}
       />

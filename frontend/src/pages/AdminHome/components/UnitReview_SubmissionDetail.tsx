@@ -185,7 +185,7 @@ const SubmissionDetailComponent: React.FC<SubmissionDetailDialogProps> = ({
                   {isImageFile(localSubmission.task_file) && (
                     <div className="mt-2 mb-2">
                       <img
-                        src={import.meta.env.VITE_APP_BASENAME + 'files/' + localSubmission.task_file.split('/files/')[1] + `?t=${new Date().getTime()}`} // 添加時間戳防止緩存
+                        src={import.meta.env.VITE_APP_TEST_DNS + `/${import.meta.env.VITE_APP_FILES_ROUTE}/` + localSubmission.task_file.split('/files/')[1] + `?t=${new Date().getTime()}`} // 添加時間戳防止緩存
                         alt="提交的圖片"
                         className="max-w-full h-auto rounded-lg border border-gray-200 shadow-sm"
                         width='480px'

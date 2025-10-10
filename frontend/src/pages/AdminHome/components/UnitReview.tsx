@@ -169,7 +169,7 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
                                                             }}
                                                             placeholder={undefined}
                                                         >
-                                                            單元 AI 分析
+                                                            單元分析
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -210,7 +210,7 @@ const UnitReviewComponent = (props: UnitReviewProps) => {
             <AnalyticComponent
                 open={showAnalytic}
                 onClose={handleCloseAnalytic}
-                studentSubmissions={studentSubmissions}
+                courseTask={selectedCourseTask}
                 assignmentName={selectedCourseTask?.name || ''}
             />
         </>
