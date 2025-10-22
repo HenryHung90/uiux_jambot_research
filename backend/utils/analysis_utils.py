@@ -7,6 +7,9 @@ import json
 import os
 import openai
 from collections import Counter
+from PIL import Image
+
+Image.MAX_IMAGE_PIXELS = None  # 移除圖像大小限制
 
 
 def extract_text(task, is_from_celery=False):

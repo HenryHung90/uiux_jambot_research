@@ -70,7 +70,7 @@ export const API_getStudentCoursesByCourse = (courseId: string | number) => {
  * @returns Promise 返回學生課程任務列表
  */
 export const API_getStudentCourseTasks = (studentCourseId: string | number) => {
-  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSES}${studentCourseId}student_course_tasks/`).sendRequest()
+  return new API_GET(`${import.meta.env.VITE_APP_API_STUDENT_COURSES}${studentCourseId}/student_course_tasks/`).sendRequest()
 }
 
 export const API_analyzeAllStudentCourseTasksByCourse = (courseTaskId: string | number) => {
