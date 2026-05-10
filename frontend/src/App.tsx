@@ -21,6 +21,7 @@ import Loading from "./components/alertLogAndLoadingPage/Loading";
 import Login from "./pages/Login/Login";
 import Home from "./pages/Home/Home";
 import AdminHome from "./pages/AdminHome/AdminHome";
+import ChatRoom from "./pages/ChatRoom/ChatRoom";
 import NotFound from "./pages/errorPage/404/NotFound";
 // interface
 
@@ -74,6 +75,10 @@ const AppContent = () => {
     {
       path: '/',
       element: <Home/>
+    },
+    {
+      path: '/chat/:courseId',
+      element: <ChatRoom/>
     },
     {
       path: '*',

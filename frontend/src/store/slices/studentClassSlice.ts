@@ -11,6 +11,7 @@ interface CourseTask {
 interface Course {
   id: number;
   name: string;
+  course_type: string;
   courseTasks: CourseTask[];
   [key: string]: any;
 }

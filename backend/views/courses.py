@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 
-from ..models import CourseTask, StudentCourse
+from ..models import CourseTask, StudentCourse, StudentCourseChat
 from ..models.courses import Course
 from ..models.students import Student
 from ..serializers.course_serializer import CourseSerializer
@@ -78,4 +78,26 @@ class CourseViewSet(viewsets.ModelViewSet):
         course = self.get_object()
         course_tasks = CourseTask.objects.filter(course=course)
         serializer = CourseTaskSerializer(course_tasks, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def change_course_type(self, request, pk=None):
+        course = self.get_object()
+
+        if course.course_type == Course.CourseType.NORMAL:
+            course.course_type = Course.CourseType.CHAT
+        else:
+            course.course_type = Course.CourseType.NORMAL
+
+        students = Student.objects.filter(student_class=course.student_class)
+
+        for student in students:
+            StudentCourseChat.objects.get_or_create(
+                student=student,
+                course=course
+            )
+
+        course.save()
+        serializer = self.get_serializer(course)
+        print(serializer.data)
         return Response(serializer.data)

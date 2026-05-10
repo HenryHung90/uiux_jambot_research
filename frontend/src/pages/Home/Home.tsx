@@ -11,6 +11,7 @@ import {useDispatch} from "react-redux";
 import {useUserInfo} from "../../store/hooks/useUserInfo";
 import PasswordChangeComponent from "./components/PasswordChange";
 import StudentCourseTaskDialog from "./components/StudentCourse";
+import CourseTasksList from "./components/CourseTasksList";
 import {AuthServices} from "../../utils/services/core";
 
 
@@ -150,44 +151,13 @@ const Home = () => {
           <p className="text-gray-500">暫無課程</p>
         ) : (
           <div className="space-y-6">
-            {studentCourses.map((course) => (
-              <div key={course.id} className="border-b pb-4 last:border-b-0">
-                <h3 className="text-lg font-medium mb-2">{course.course_detail.name}</h3>
-                {studentCourseTasks[course.id]?.length > 0 ? (
-                  <div className="space-y-2">
-                    {studentCourseTasks[course.id].map((task) => (
-                      <div
-                        key={task.id}
-                        className="bg-gray-50 p-3 rounded-md cursor-pointer hover:bg-gray-100 transition-colors"
-                        onClick={() => handleTaskClick(task)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <span className="font-medium">{task.course_task_detail.name}</span>
-                          <span className="text-sm text-gray-500">
-                            {new Date(task.created_at || '').toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="mt-1 flex items-center text-sm">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            task.task_file || task.task_link 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {task.task_file || task.task_link ? '已提交' : '未提交'}
-                          </span>
-                          {task.teacher_mark && Object.keys(task.teacher_mark).length > 0 && (
-                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              已評分
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm">暫無作業</p>
-                )}
-              </div>
+            {studentCourses.map((studentCourse) => (
+              <CourseTasksList
+                key={studentCourse.id}
+                course={studentCourse}
+                tasks={studentCourseTasks[studentCourse.id] || []}
+                onTaskClick={handleTaskClick}
+              />
             ))}
           </div>
         )}

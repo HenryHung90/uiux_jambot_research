@@ -17,6 +17,7 @@ import UnitCard from "./SemesterUnits_UnitCard";
 import {CourseService} from "../../../utils/services/courseService";
 import {CourseTaskService} from "../../../utils/services/courseTaskService";
 import {Material, Assignment, Unit} from "../../../store/hooks/useStudentClass";
+import {StudentCourseChatService} from "../../../utils/services/studentCourseChatService";
 
 interface SemesterUnitsProps {
   units: Unit[];
@@ -54,7 +55,7 @@ const SemesterUnitsComponent = (props: SemesterUnitsProps) => {
       window.open(material.content_url, '_blank');
       return;
     } else if (material.content_file) {
-      window.open(import.meta.env.VITE_APP_BASENAME + '/files/' + material.content_file.split("/files/")[1] , '_blank');
+      window.open(import.meta.env.VITE_APP_BASENAME + '/files/' + material.content_file.split("/files/")[1], '_blank');
       return;
     } else {
       alert("此教材沒有可用的連結或檔案");
@@ -193,6 +194,17 @@ const SemesterUnitsComponent = (props: SemesterUnitsProps) => {
     setOpenAddContentDialog(true);
   };
 
+  const handleChangeCourseType = async (courseId: number) => {
+    await CourseService.changeCourseType(courseId)
+    if (onDataChange) {
+      onDataChange();
+    }
+  }
+
+  const handleDownloadStudentCourseChats = async (courseId: number) => {
+    const blob = await StudentCourseChatService.getAllChatsByCourseId(courseId)
+    StudentCourseChatService.downloadExcel(blob, 'course_chats.xlsx')
+  }
 // 處理刪除任務
   const handleDeleteTask = async (taskName: string, taskId: number | string) => {
     if (window.confirm(`確定要刪除 "${taskName}" 嗎？`)) {
@@ -221,6 +233,8 @@ const SemesterUnitsComponent = (props: SemesterUnitsProps) => {
             onAddContent={handleAddContent}
             onEditTask={handleEditTask}
             onDeleteTask={handleDeleteTask}
+            onChangeCourseType={handleChangeCourseType}
+            onDownloadStudentCourseChats={handleDownloadStudentCourseChats}
           />
         ))}
 

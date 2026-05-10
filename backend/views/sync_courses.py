@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
 
+from backend.models import StudentCourseChat
 # 導入所需模型
 from backend.models.students import Student
 from backend.models.courses import Course
@@ -53,13 +54,18 @@ def sync_student_courses(request):
                     # 遍歷課程任務
                     for course_task in course_tasks:
                         # 檢查學生是否已有此課程任務的記錄
-                        student_course_task, created = StudentCourseTask.objects.get_or_create(
+                        student_course_task, created_task = StudentCourseTask.objects.get_or_create(
                             student=student,
                             course=course,
                             course_task=course_task
                         )
 
-                        if created:
+                        student_course_chat, created_chat = StudentCourseChat.objects.get_or_create(
+                            student=student,
+                            course=course
+                        )
+
+                        if created_task:
                             created_student_course_tasks += 1
                             print(f'    - 創建學生課程任務: {student.name} - {course_task.name}')
 

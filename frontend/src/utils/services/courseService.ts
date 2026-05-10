@@ -1,13 +1,14 @@
 import {
   API_createCourse,
   API_deleteCourse,
-  API_getAllCourses,
+  API_getAllCourses, API_getChangeCourseType,
   API_getCourseById,
   API_getCoursesByActiveStatus,
   API_getCoursesByClass,
   API_getCoursesByName,
   API_getCourseTasks,
   API_toggleCourseActive, API_updateCourse,
+  API_getStudentCourseChatsByCourse
 } from "../API/API_course";
 import {ICourseTask, ICourseTeacher, Req_createAndUpdateCourse} from "../API/interface";
 
@@ -71,5 +72,15 @@ export class CourseService {
     const response = await API_getCourseTasks(courseId)
     const resData: Array<ICourseTask> = response.data
     return resData
+  }
+
+  static async changeCourseType(courseId: string | number){
+    const response = await API_getChangeCourseType(courseId)
+    const resData: ICourseTeacher = response.data
+    return resData
+  }
+
+  static async getStudentCourseChatsByCourse(courseId: string | number){
+    const response = await API_getStudentCourseChatsByCourse(courseId)
   }
 }

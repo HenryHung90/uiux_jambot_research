@@ -90,3 +90,13 @@ export const API_getCoursesByName = (name: string) => {
 export const API_getCourseTasks = (courseId: string | number) => {
   return new API_GET(`${import.meta.env.VITE_APP_API_COURSES}${courseId}/course_tasks/`).sendRequest();
 };
+
+
+export const API_getChangeCourseType = (courseId: string | number) =>{
+  return new API_GET(`${import.meta.env.VITE_APP_API_COURSES}${courseId}/change_course_type/`).sendRequest();
+}
+
+
+export const API_getStudentCourseChatsByCourse = (courseId: string | number) => {
+  return new API_GET(`${import.meta.env.VITE_APP_API_COURSES}${courseId}/student_course_chats/`).sendRequest();
+}

@@ -20,12 +20,16 @@ export interface IStudentClass {
 export interface ICourseStudent {
   id: number;
   name: string;
+  course_type: string;
   student_id: string;
+  student_class: number;
 }
 
 export interface ICourseTeacher extends ICourseStudent {
   all_assistive_tool_analysis: any
   all_prompt_analysis: any
+  name: string
+  is_active: boolean
 }
 
 export interface IStudent {
@@ -74,6 +78,15 @@ export interface IStudentCourseTask {
   prompt_analysis?: any;
   teacher_mark?: any;
   is_analyzed: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface IStudentCourseChat {
+  id: number;
+  student_detail?: IStudent;
+  chat_content: string;
+  ai_response: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -137,6 +150,17 @@ export interface Req_createAndUpdateCourseTask extends RequestParams {
 export interface Req_createAndUpdateStudentCourse extends RequestParams {
   student?: number | string;
   course?: number;
+}
+
+export interface Req_getStudentCourseChatByPagination extends RequestParams {
+  course_id: number | string;
+  page: number;
+  page_size: number;
+}
+
+export interface Req_chatWithAIData extends RequestParams {
+  course_id: number | string;
+  chat_content?: string;
 }
 
 export interface Req_createAndUpdateStudentCourseTask extends RequestParams {

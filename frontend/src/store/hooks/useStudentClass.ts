@@ -1,7 +1,6 @@
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState, AppDispatch} from '../index';
 import {fetchStudentClassesData, setCurrentClassId} from '../slices/studentClassSlice';
-import {useEffect} from 'react';
 
 export interface Material {
   name: string;
@@ -19,6 +18,7 @@ export interface Assignment {
 export interface Unit {
   name: string;
   courseId: number;
+  courseType: string;
   materials: Material[];
   assignments: Assignment[];
 }
@@ -70,6 +70,7 @@ export const useStudentClass = () => {
       return {
         name: course.name,
         courseId: course.id,
+        courseType: course.course_type,
         materials,
         assignments
       };

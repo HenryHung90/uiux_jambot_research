@@ -12,6 +12,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'is_active',
+            'course_type',
             'student_class',
             'student_class_detail',
             'all_assistive_tool_analysis',

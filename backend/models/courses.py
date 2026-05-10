@@ -1,9 +1,21 @@
 from django.db import models
 from .student_classes import StudentClass
 
+
 class Course(models.Model):
+    class CourseType(models.TextChoices):
+        NORMAL = 'normal', '一般課程'
+        CHAT = 'chat', '對話課程'
+
     name = models.CharField(max_length=200, verbose_name="課程名稱")
     is_active = models.BooleanField(default=True, verbose_name="是否啟用")
+
+    course_type = models.CharField(
+        max_length=20,
+        choices=CourseType.choices,
+        default=CourseType.NORMAL,
+        verbose_name="課程類型"
+    )
     student_class = models.ForeignKey(
         StudentClass,
         on_delete=models.CASCADE,
