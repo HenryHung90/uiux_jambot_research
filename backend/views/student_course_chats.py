@@ -142,7 +142,7 @@ class StudentCourseChatViewSet(viewsets.ModelViewSet):
             # 创建 Excel 工作簿
             wb = Workbook()
             ws = wb.active
-            ws.title = "课程聊天记录"
+            ws.title = "聊天記錄"
 
             # 设置表头
             headers = ['學生ID', '學生姓名', '學生訊息', 'AI回應', '時間']
@@ -157,7 +157,6 @@ class StudentCourseChatViewSet(viewsets.ModelViewSet):
                 cell.font = header_font
                 cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
-            # 填充数据
             for chat in chats:
                 student_id = chat.student.student_id if chat.student else 'N/A'
                 student_name = chat.student.name if chat.student else 'N/A'
@@ -173,14 +172,12 @@ class StudentCourseChatViewSet(viewsets.ModelViewSet):
                     created_at
                 ])
 
-            # 设置列宽和行高
             ws.column_dimensions['A'].width = 12
             ws.column_dimensions['B'].width = 15
             ws.column_dimensions['C'].width = 30
             ws.column_dimensions['D'].width = 30
             ws.column_dimensions['E'].width = 20
 
-            # 设置所有行的换行和垂直对齐
             for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
                 for cell in row:
                     cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
@@ -200,6 +197,6 @@ class StudentCourseChatViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             return Response(
-                {'error': f'生成Excel文件失败: {str(e)}'},
+                {'error': f'生成 Excel 失敗: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
