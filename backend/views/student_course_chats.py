@@ -139,48 +139,57 @@ class StudentCourseChatViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-            # 创建 Excel 工作簿
-            wb = Workbook()
-            ws = wb.active
-            ws.title = "聊天記錄"
-
-            # 设置表头
-            headers = ['學生ID', '學生姓名', '學生訊息', 'AI回應', '時間']
-            ws.append(headers)
-
-            # 设置表头样式
-            header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-            header_font = Font(color="FFFFFF", bold=True)
-
-            for cell in ws[1]:
-                cell.fill = header_fill
-                cell.font = header_font
-                cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-
+            # Group chats by student
+            students_chats = {}
             for chat in chats:
                 student_id = chat.student.student_id if chat.student else 'N/A'
-                student_name = chat.student.name if chat.student else 'N/A'
-                chat_content = chat.chat_content or ''
-                ai_response = chat.ai_response or ''
-                created_at = chat.created_at.strftime('%Y-%m-%d %H:%M:%S') if chat.created_at else ''
+                if student_id not in students_chats:
+                    students_chats[student_id] = []
+                students_chats[student_id].append(chat)
 
-                ws.append([
-                    student_id,
-                    student_name,
-                    chat_content,
-                    ai_response,
-                    created_at
-                ])
+            # Create a workbook with separate sheets for each student
+            wb = Workbook()
+            wb.remove(wb.active)  # Remove default sheet
 
-            ws.column_dimensions['A'].width = 12
-            ws.column_dimensions['B'].width = 15
-            ws.column_dimensions['C'].width = 30
-            ws.column_dimensions['D'].width = 30
-            ws.column_dimensions['E'].width = 20
+            for student_id, student_chats in students_chats.items():
+                ws = wb.create_sheet(title=f"student_{student_id}")
 
-            for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-                for cell in row:
-                    cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
+                # 设置表头
+                headers = ['學生ID', '學生姓名', '學生訊息', 'AI回應', '時間']
+                ws.append(headers)
+
+                # 设置表头样式
+                header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+                header_font = Font(color="FFFFFF", bold=True)
+
+                for cell in ws[1]:
+                    cell.fill = header_fill
+                    cell.font = header_font
+                    cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+                for chat in student_chats:
+                    student_name = chat.student.name if chat.student else 'N/A'
+                    chat_content = chat.chat_content or ''
+                    ai_response = chat.ai_response or ''
+                    created_at = chat.created_at.strftime('%Y-%m-%d %H:%M:%S') if chat.created_at else ''
+
+                    ws.append([
+                        student_id,
+                        student_name,
+                        chat_content,
+                        ai_response,
+                        created_at
+                    ])
+
+                ws.column_dimensions['A'].width = 12
+                ws.column_dimensions['B'].width = 15
+                ws.column_dimensions['C'].width = 30
+                ws.column_dimensions['D'].width = 30
+                ws.column_dimensions['E'].width = 20
+
+                for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+                    for cell in row:
+                        cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
 
             # 保存到内存中的字节流
             output = BytesIO()
