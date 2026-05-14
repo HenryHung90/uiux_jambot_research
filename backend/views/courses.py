@@ -89,14 +89,6 @@ class CourseViewSet(viewsets.ModelViewSet):
         else:
             course.course_type = Course.CourseType.NORMAL
 
-        students = Student.objects.filter(student_class=course.student_class)
-
-        for student in students:
-            StudentCourseChat.objects.get_or_create(
-                student=student,
-                course=course
-            )
-
         course.save()
         serializer = self.get_serializer(course)
         print(serializer.data)
